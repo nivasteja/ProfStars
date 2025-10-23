@@ -1,0 +1,115 @@
+/* =============================
+   Admin Dashboard Page
+   ============================= */
+.admin-container {
+  min-height: 100vh;
+  padding: 40px;
+  background: #f9fafb;
+  font-family: "Poppins", sans-serif;
+  color: #1f2937;
+  text-align: center;
+}
+
+h1 {
+  color: #4f46e5;
+  margin-bottom: 10px;
+}
+
+.subtext {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 25px;
+}
+
+.status-message {
+  background: #e0e7ff;
+  color: #1e3a8a;
+  padding: 10px 15px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+/* Table styles */
+.professor-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.professor-table th {
+  background: #4f46e5;
+  color: white;
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.professor-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.professor-table tr:hover {
+  background: #f3f4f6;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.approve-btn {
+  background: #22c55e;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.approve-btn:hover {
+  background: #16a34a;
+}
+
+.reject-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+.no-professors {
+  font-size: 18px;
+  color: #4b5563;
+  margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .professor-table th,
+  .professor-table td {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
