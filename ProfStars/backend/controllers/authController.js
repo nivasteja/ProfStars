@@ -6,45 +6,54 @@ import jwt from "jsonwebtoken";
 /**
  * ============================================
  * REGISTER CONTROLLER
- * Handles Student and Professor Registration
+ * Handles registration for Student, Professor, Admin
  * ============================================
  */
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Validation
-    if (!name || !email || !password || !role) {
+    // Basic validation
+    if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Check if user already exists
+    // Check if already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered." });
     }
 
-    // Hash password securely
+    // 🔹 Auto-assign role for admin domain
+    let userRole = role || "student";
+    if (/@profstars\.(in|com|ca)$/i.test(email)) {
+      userRole = "admin";
+    }
+
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user with approval flag
+    // Create user
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      role,
-      // Professors require admin approval before login
-      isApproved: role !== "professor",
+      role: userRole,
+      // Professors require admin approval
+      isApproved: userRole !== "professor",
     });
 
     await newUser.save();
 
+    // Response
     res.status(201).json({
       message:
-        role === "professor"
-          ? "Professor registered successfully. Awaiting admin approval."
-          : "Student registration successful!",
+        userRole === "admin"
+          ? "Admin account created successfully."
+          : userRole === "professor"
+          ? "Professor registration successful. Awaiting admin approval."
+          : "Student registration successful.",
     });
   } catch (error) {
     console.error("❌ Error in registerUser:", error.message);
@@ -58,16 +67,16 @@ export const registerUser = async (req, res) => {
 /**
  * ============================================
  * LOGIN CONTROLLER
- * Handles Login for All Roles
+ * Handles login for all roles
  * ============================================
  */
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Input validation
+    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: "Please enter email and password." });
+      return res.status(400).json({ message: "Please provide email and password." });
     }
 
     // Find user
@@ -76,28 +85,32 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // Verify password
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // Check professor approval status
-    if (user.role === "professor" && !user.isApproved) {
-      return res.status(403).json({
-        message: "Professor account pending admin approval.",
-      });
+    // 🔹 Ensure admin role for specific domain
+    if (/@profstars\.(in|com|ca)$/i.test(email)) {
+      user.role = "admin";
     }
 
-    // Generate signed JWT token
+    // Professors must be approved
+    if (user.role === "professor" && !user.isApproved) {
+      return res.status(403).json({ message: "Professor account pending admin approval." });
+    }
+
+    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    // Successful login
     res.status(200).json({
-      message: "Login successful!",
+      message: `Login successful as ${user.role}.`,
       token,
       role: user.role,
       name: user.name,
@@ -113,8 +126,8 @@ export const loginUser = async (req, res) => {
 
 /**
  * ============================================
- * ADMIN APPROVAL CONTROLLERS
- * Approve or Reject Professors
+ * ADMIN CONTROLLERS
+ * For approving or rejecting professors
  * ============================================
  */
 export const getPendingProfessors = async (req, res) => {

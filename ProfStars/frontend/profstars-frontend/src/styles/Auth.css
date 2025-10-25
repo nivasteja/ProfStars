@@ -1,92 +1,71 @@
-/* Force full screen for auth pages */
-.auth-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+.auth-page,
+.auth-page-wide {
+  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  font-family: "Poppins", sans-serif;
-  z-index: 9999;
+  align-items: center;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
 }
 
-/* Center card */
-.auth-card {
+.auth-card,
+.auth-card-wide {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  padding: 3rem 3.5rem;
-  width: 90%;
-  max-width: 420px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 900px;
+  color: #111;
   text-align: center;
-  animation: fadeIn 0.8s ease forwards;
-  opacity: 0;
 }
 
-/* Fade animation */
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+.auth-card h2,
+.auth-card-wide h2 {
+  color: #4f46e5;
+  margin-bottom: 20px;
 }
 
-/* Inputs */
+.auth-card form,
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
 .auth-card input,
-.auth-card select {
-  width: 100%;
-  padding: 0.9rem 1rem;
-  margin: 0.6rem 0;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+.auth-card-wide input,
+.auth-card-wide select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
 }
 
-.auth-card input:focus,
-.auth-card select:focus {
-  border-color: #8b5cf6;
-  outline: none;
-}
-
-/* Button */
-.auth-card button {
-  width: 100%;
-  padding: 0.9rem;
-  border: none;
-  border-radius: 10px;
-  background: #8b5cf6;
+.auth-card button,
+.auth-card-wide button {
+  background: #4f46e5;
   color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.auth-card button:hover {
-  background: #7c3aed;
-}
-
-/* Links */
-.auth-card p {
-  margin-top: 1rem;
-  color: #444;
-}
-
-.auth-card a {
-  color: #7c3aed;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
   font-weight: 600;
-  text-decoration: none;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.auth-card a:hover {
-  text-decoration: underline;
+.auth-card button:hover,
+.auth-card-wide button:hover {
+  background: #4338ca;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .auth-card {
-    padding: 2rem;
-  }
+.auth-card p,
+.auth-card-wide p {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #444;
 }

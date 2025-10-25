@@ -1,0 +1,109 @@
+.admin-users {
+  padding: 30px;
+  font-family: "Poppins", sans-serif;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+h1 {
+  color: #4f46e5;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.filters {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filters select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.users-table th {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.role-student {
+  color: #10b981;
+}
+
+.role-professor {
+  color: #f59e0b;
+}
+
+.role-admin {
+  color: #3b82f6;
+}
+
+.approve-btn,
+.reject-btn,
+.delete-btn {
+  padding: 5px 10px;
+  margin: 2px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+}
+
+.approve-btn {
+  background: #10b981;
+}
+
+.reject-btn {
+  background: #f59e0b;
+}
+
+.delete-btn {
+  background: #ef4444;
+}
+
+.approve-btn:hover {
+  background: #059669;
+}
+
+.reject-btn:hover {
+  background: #d97706;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.loading,
+.no-users {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .users-table th,
+  .users-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+}

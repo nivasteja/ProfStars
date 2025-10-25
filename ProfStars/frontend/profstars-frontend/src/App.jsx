@@ -1,124 +1,150 @@
-import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Link,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
+
+// ====== Page Imports ======
+import Home from "./pages/Home"; // 🏠 (to be created in Phase 9)
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import ProfessorDashboard from "./pages/ProfessorDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import ProfessorDetails from "./pages/ProfessorDetails";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminOverview from "./pages/AdminOverview";
+import AdminLayout from "./layouts/AdminLayout";
 import "./App.css";
-import logo from "./assets/logo.svg";
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
-  const navigate = useNavigate();
+  const [role, setRole] = useState(localStorage.getItem("role"));
 
+  // ✅ Sync authentication state across tabs
   useEffect(() => {
     const checkAuth = () => {
       setIsAuth(!!localStorage.getItem("token"));
+      setRole(localStorage.getItem("role"));
     };
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  // ✅ Logout function
+  // ✅ Logout clears session
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
+    localStorage.clear();
     setIsAuth(false);
-    navigate("/"); // redirect to home page
+    setRole(null);
   };
 
   return (
-    <div>
-      {/* ========================
-          NAVBAR SECTION
-      ======================== */}
-      <nav className="navbar">
-        {/* Left Side - Logo + Brand */}
-        <div className="navbar-left">
-          <Link to="/" className="nav-logo">
-            <img src={logo} alt="ProfStars Logo" className="logo" />
-            <span className="brand-name">ProfStars</span>
-          </Link>
-        </div>
-
-        {/* Right Side - Navigation Links */}
-        <div className="navbar-right">
-          <Link to="/" className="nav-link">
-            Home
-          </Link>
-
-          {!isAuth && (
-            <>
-              <Link to="/register" className="nav-link">
-                Register
-              </Link>
-              <Link to="/login" className="nav-link">
-                Login
-              </Link>
-            </>
-          )}
-
-          {isAuth && (
-            <>
-              <Link to="/dashboard" className="nav-link">
-                Dashboard
-              </Link>
-              {/* ✅ Show Logout when logged in */}
+    <Router>
+      {/* ✅ Global Navbar (Hidden for Admin pages) */}
+      {role !== "admin" && (
+        <nav className="navbar">
+          <div className="navbar-left">
+            <Link to="/" className="brand">
+              ProfStars
+            </Link>
+          </div>
+          <div className="navbar-right">
+            {!isAuth ? (
+              <>
+                <Link to="/login">Login</Link>
+                <Link to="/register">Register</Link>
+              </>
+            ) : (
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
-            </>
-          )}
-        </div>
-      </nav>
+            )}
+          </div>
+        </nav>
+      )}
 
-      {/* ========================
-          PAGE ROUTES
-      ======================== */}
+      {/* ✅ App Routes */}
       <Routes>
-        {/* Home Section */}
+        {/* =============================
+            PUBLIC / AUTH ROUTES
+        ============================== */}
+        <Route path="/" element={<Home />} /> {/* 🏠 Home page */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* =============================
+            ADMIN ROUTES (Protected)
+        ============================== */}
         <Route
-          path="/"
+          path="/admin"
           element={
-            <div className="home-container">
-              <img src={logo} alt="ProfStars Logo" className="logo" />
-              <h1 className="home-title">Welcome to ProfStars</h1>
-              <p className="home-subtitle">
-                Empower your academic journey — connect with top professors and
-                mentors today.
-              </p>
-              {!isAuth && (
-                <Link to="/register" className="primary-btn">
-                  Get Started
-                </Link>
-              )}
-            </div>
+            isAuth && role === "admin" ? (
+              <AdminLayout />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        >
+          {/* Nested inside AdminLayout via <Outlet /> */}
+          <Route index element={<AdminOverview />} /> {/* ✅ Default Admin Page */}
+          <Route path="approvals" element={<AdminDashboard />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+        </Route>
+
+        {/* =============================
+            PROFESSOR DASHBOARD
+        ============================== */}
+        <Route
+          path="/professor"
+          element={
+            isAuth && role === "professor" ? (
+              <ProfessorDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
 
-        {/* Register */}
-        <Route
-          path="/register"
-          element={!isAuth ? <Register /> : <Navigate to="/dashboard" />}
-        />
-
-        {/* Login */}
-        <Route
-          path="/login"
-          element={!isAuth ? <Login /> : <Navigate to="/dashboard" />}
-        />
-
-        {/* Dashboard */}
+        {/* =============================
+            STUDENT DASHBOARD & DETAILS
+        ============================== */}
         <Route
           path="/dashboard"
-          element={isAuth ? <Dashboard /> : <Navigate to="/login" />}
+          element={
+            isAuth && role === "student" ? (
+              <StudentDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/professor/:id"
+          element={
+            isAuth && role === "student" ? (
+              <ProfessorDetails />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
-        {/* Admin Dashboard */}
-        <Route path="/admin" element={<AdminDashboard />} />
+        {/* =============================
+            FALLBACK (404)
+        ============================== */}
+        <Route
+          path="*"
+          element={
+            <h2 style={{ textAlign: "center", marginTop: "50px" }}>
+              404 — Page Not Found
+            </h2>
+          }
+        />
       </Routes>
-    </div>
+    </Router>
   );
 }
 

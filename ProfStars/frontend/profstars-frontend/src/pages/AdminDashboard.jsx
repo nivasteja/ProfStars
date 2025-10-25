@@ -1,107 +1,131 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "../styles/AdminDashboard.css";
 
 const AdminDashboard = () => {
-  const [professors, setProfessors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [tab, setTab] = useState("registered");
+  const [registeredProfs, setRegisteredProfs] = useState([]);
+  const [studentProfs, setStudentProfs] = useState([]);
+  const token = localStorage.getItem("token");
 
-  // Fetch all pending professors
-  const fetchProfessors = async () => {
+  // ✅ Wrap fetchPending in useCallback to prevent lint warning
+  const fetchPending = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/pending-professors");
-      setProfessors(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setMessage("Failed to load pending professors.");
-      setLoading(false);
-    }
-  };
+      const res = await axios.get("http://localhost:5000/api/admin/pending-professors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  // Approve a professor
-  const handleApprove = async (id) => {
-    try {
-      await axios.patch(`http://localhost:5000/api/admin/approve/${id}`);
-      setProfessors(professors.filter((p) => p._id !== id));
-      setMessage("✅ Professor approved successfully!");
-    } catch (err) {
-      console.error(err);
-      setMessage("❌ Failed to approve professor.");
+      const all = res.data;
+      setRegisteredProfs(all.filter((p) => !p.email.includes("@pending.profstars.com")));
+      setStudentProfs(all.filter((p) => p.email.includes("@pending.profstars.com")));
+    } catch (error) {
+      console.error("❌ Failed to fetch pending:", error);
+      toast.error("Failed to load pending professors.");
     }
-  };
+  }, [token]);
 
-  // Reject a professor
-  const handleReject = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/admin/reject/${id}`);
-      setProfessors(professors.filter((p) => p._id !== id));
-      setMessage("❌ Professor rejected and removed.");
-    } catch (err) {
-      console.error(err);
-      setMessage("❌ Failed to reject professor.");
-    }
-  };
-
+  // ✅ useEffect runs once with correct dependency
   useEffect(() => {
-    fetchProfessors();
-  }, []);
+    fetchPending();
+  }, [fetchPending]);
 
-  if (loading) {
-    return (
-      <div className="admin-container">
-        <h2>Loading pending professors...</h2>
-      </div>
-    );
-  }
+  // ✅ Approve or reject professor
+  const handleAction = async (id, action) => {
+    try {
+      const url =
+        action === "approve"
+          ? `http://localhost:5000/api/admin/approve/${id}`
+          : `http://localhost:5000/api/admin/reject/${id}`;
+
+      const res = await axios.put(
+        url,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message);
+      fetchPending();
+    } catch (error) {
+      console.error("❌ Action failed:", error);
+      toast.error("Action failed.");
+    }
+  };
+
+  // ✅ Reusable table renderer
+  const renderTable = (list) => (
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>University</th>
+          <th>Department</th>
+          <th>Country</th>
+          <th>Email</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {list.length === 0 ? (
+          <tr>
+            <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+              No pending professors.
+            </td>
+          </tr>
+        ) : (
+          list.map((prof) => (
+            <tr key={prof._id}>
+              <td>{prof.name}</td>
+              <td>{prof.university || "-"}</td>
+              <td>{prof.department || "-"}</td>
+              <td>{prof.country || "-"}</td>
+              <td>{prof.email}</td>
+              <td>
+                <button
+                  className="approve-btn"
+                  onClick={() => handleAction(prof._id, "approve")}
+                >
+                  Approve
+                </button>
+                <button
+                  className="reject-btn"
+                  onClick={() => handleAction(prof._id, "reject")}
+                >
+                  Reject
+                </button>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  );
 
   return (
-    <div className="admin-container">
+    <div className="admin-dashboard">
+      <ToastContainer />
       <h1>Admin Dashboard</h1>
-      <p className="subtext">Manage professor approvals</p>
 
-      {message && <p className="status-message">{message}</p>}
+      <div className="tabs">
+        <button
+          className={tab === "registered" ? "active" : ""}
+          onClick={() => setTab("registered")}
+        >
+          Registered Professors
+        </button>
+        <button
+          className={tab === "student" ? "active" : ""}
+          onClick={() => setTab("student")}
+        >
+          Student-Submitted Professors
+        </button>
+      </div>
 
-      {professors.length === 0 ? (
-        <p className="no-professors">🎉 No pending professors at the moment!</p>
-      ) : (
-        <table className="professor-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Department</th>
-              <th>University</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {professors.map((prof) => (
-              <tr key={prof._id}>
-                <td>{prof.name}</td>
-                <td>{prof.email}</td>
-                <td>{prof.department || "N/A"}</td>
-                <td>{prof.university || "N/A"}</td>
-                <td className="action-buttons">
-                  <button
-                    className="approve-btn"
-                    onClick={() => handleApprove(prof._id)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="reject-btn"
-                    onClick={() => handleReject(prof._id)}
-                  >
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="tab-content">
+        {tab === "registered" && renderTable(registeredProfs)}
+        {tab === "student" && renderTable(studentProfs)}
+      </div>
     </div>
   );
 };
