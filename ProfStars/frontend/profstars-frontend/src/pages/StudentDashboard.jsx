@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 const StudentDashboard = () => {
   const [professors, setProfessors] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [universities, setUniversities] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterUniversity, setFilterUniversity] = useState("");
@@ -15,24 +19,77 @@ const StudentDashboard = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // ✅ Fetch professors - wrapped in useCallback to prevent dependency warning
+  // Fetch countries on component mount
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/universities/countries"
+        );
+        setCountries(res.data);
+        setLoadingCountries(false);
+      } catch (err) {
+        console.error("Error loading countries:", err);
+        setLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  // Fetch universities when country filter changes
+  useEffect(() => {
+    if (filterCountry) {
+      setLoadingUniversities(true);
+      setUniversities([]);
+      setFilterUniversity("");
+
+      axios
+        .get(
+          `http://localhost:5000/api/universities/${encodeURIComponent(
+            filterCountry
+          )}`
+        )
+        .then((res) => {
+          if (res.data && res.data.length > 0) {
+            setUniversities(res.data);
+          } else {
+            setUniversities([]);
+          }
+          setLoadingUniversities(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching universities:", err);
+          setUniversities([]);
+          setLoadingUniversities(false);
+        });
+    } else {
+      setUniversities([]);
+      setFilterUniversity("");
+    }
+  }, [filterCountry]);
+
+  // Fetch professors
   const fetchProfessors = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/professors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `http://localhost:5000/api/review/professors?q=${encodeURIComponent(
+          search
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setProfessors(res.data);
     } catch (error) {
-      console.error("Error fetching professors:", error);
+      console.error("❌ Error fetching professors:", error);
     }
-  }, [token]);
+  }, [token, search]);
 
-  // ✅ useEffect with correct syntax and dependency
   useEffect(() => {
     fetchProfessors();
   }, [fetchProfessors]);
 
-  // ✅ Handle review submission
+  // Handle review submission
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -43,7 +100,7 @@ const StudentDashboard = () => {
       );
       setShowModal(false);
       setReview({ rating: 0, comment: "" });
-      fetchProfessors(); // Refresh list after adding review
+      fetchProfessors();
       alert("Review submitted successfully!");
     } catch (err) {
       console.error("Error submitting review:", err);
@@ -51,12 +108,16 @@ const StudentDashboard = () => {
     }
   };
 
-  // ✅ Filter professors by search, university, country
+  // Filter professors by search, university, country
   const filteredProfessors = professors.filter((p) => {
     return (
       p.name.toLowerCase().includes(search.toLowerCase()) &&
-      (!filterCountry || p.country.toLowerCase().includes(filterCountry.toLowerCase())) &&
-      (!filterUniversity || p.university.toLowerCase().includes(filterUniversity.toLowerCase()))
+      (!filterCountry ||
+        (p.country &&
+          p.country.toLowerCase().includes(filterCountry.toLowerCase()))) &&
+      (!filterUniversity ||
+        (p.university &&
+          p.university.toLowerCase().includes(filterUniversity.toLowerCase())))
     );
   });
 
@@ -65,31 +126,84 @@ const StudentDashboard = () => {
       <h1>🎓 Explore Professors</h1>
 
       {/* 🔍 Filters Section */}
-      <div className="filters">
+      <div className="filters-grid">
         <input
           type="text"
-          placeholder="Search by name..."
+          placeholder="Search by professor name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
         />
-        <input
-          type="text"
-          placeholder="Filter by university..."
-          value={filterUniversity}
-          onChange={(e) => setFilterUniversity(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Filter by country..."
+
+        <select
           value={filterCountry}
           onChange={(e) => setFilterCountry(e.target.value)}
-        />
+          disabled={loadingCountries}
+          className="filter-select"
+        >
+          <option value="">
+            {loadingCountries ? "Loading Countries..." : "All Countries"}
+          </option>
+          {countries.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={filterUniversity}
+          onChange={(e) => setFilterUniversity(e.target.value)}
+          disabled={!filterCountry || loadingUniversities}
+          className="filter-select"
+        >
+          <option value="">
+            {!filterCountry
+              ? "Select Country First"
+              : loadingUniversities
+              ? "Loading Universities..."
+              : "All Universities"}
+          </option>
+          {universities.map((uni, index) => (
+            <option key={`${uni.name}-${index}`} value={uni.name}>
+              {uni.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Clear Filters Button */}
+        {(search || filterCountry || filterUniversity) && (
+          <button
+            className="clear-filters-btn"
+            onClick={() => {
+              setSearch("");
+              setFilterCountry("");
+              setFilterUniversity("");
+            }}
+          >
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* 🧑‍🏫 Professor Cards */}
       <div className="professor-grid">
         {filteredProfessors.length === 0 ? (
-          <p className="no-results">No professors found.</p>
+          <div className="no-results">
+            <p>No professors found matching your criteria.</p>
+            {(search || filterCountry || filterUniversity) && (
+              <button
+                className="clear-filters-btn"
+                onClick={() => {
+                  setSearch("");
+                  setFilterCountry("");
+                  setFilterUniversity("");
+                }}
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
         ) : (
           filteredProfessors.map((prof) => (
             <div key={prof._id} className="professor-card">

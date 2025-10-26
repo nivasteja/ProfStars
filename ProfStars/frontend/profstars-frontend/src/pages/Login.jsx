@@ -18,12 +18,17 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        formData
+      );
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("username", res.data.name);
 
-      toast.success(`Welcome back, ${res.data.name}!`, { position: "top-center" });
+      toast.success(`Welcome back, ${res.data.name}!`, {
+        position: "top-center",
+      });
 
       setTimeout(() => {
         if (res.data.role === "admin") {

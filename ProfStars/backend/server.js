@@ -9,7 +9,7 @@ import professorRoutes from "./routes/professor.js";
 import reviewRoutes from "./routes/review.js";
 import adminAnalyticsRoutes from "./routes/adminAnalytics.js";
 import professorAnalytics from "./routes/professorAnalytics.js";
-import universitiesRoutes from "./routes/universities.js"; // ✅ ADD THIS
+import universitiesRoutes from "./routes/universities.js";
 
 dotenv.config();
 const app = express();

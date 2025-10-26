@@ -83,6 +83,11 @@
   background: #f9fafb;
 }
 
+.sidebar-links a.active {
+  background: #6366f1;
+  font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {

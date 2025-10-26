@@ -17,9 +17,10 @@ const AdminLayout = () => {
           <h2>ProfStars</h2>
         </div>
         <nav className="sidebar-links">
-          <Link to="/admin">📋 Approvals</Link>
+          <Link to="/admin/approvals">📋 Approvals</Link>
           <Link to="/admin/analytics">📊 Analytics</Link>
         </nav>
+
         <button className="logout-btn" onClick={handleLogout}>
           🚪 Logout
         </button>
