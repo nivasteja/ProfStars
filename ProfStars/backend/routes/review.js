@@ -14,7 +14,9 @@ const verifyStudent = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== "student")
-      return res.status(403).json({ message: "Only students can submit reviews." });
+      return res
+        .status(403)
+        .json({ message: "Only students can submit reviews." });
     req.user = decoded;
     next();
   } catch {
@@ -38,7 +40,9 @@ router.get("/professors", async (req, res) => {
         }
       : { role: "professor", isApproved: true };
 
-    const professors = await User.find(filter).select("name university department country academicTitle");
+    const professors = await User.find(filter).select(
+      "name university department country academicTitle"
+    );
     res.json(professors);
   } catch {
     res.status(500).json({ message: "Failed to load professors." });
@@ -51,7 +55,8 @@ router.get("/professor/:id", async (req, res) => {
     const professor = await User.findById(req.params.id).select(
       "name email university department country academicTitle experienceYears"
     );
-    if (!professor) return res.status(404).json({ message: "Professor not found." });
+    if (!professor)
+      return res.status(404).json({ message: "Professor not found." });
 
     const reviews = await Review.find({ professorId: professor._id })
       .populate("studentId", "name")
@@ -79,7 +84,9 @@ router.post("/add", verifyStudent, async (req, res) => {
       studentId: req.user.id,
     });
     if (existing)
-      return res.status(400).json({ message: "You already reviewed this professor." });
+      return res
+        .status(400)
+        .json({ message: "You already reviewed this professor." });
 
     const review = new Review({
       professorId,
@@ -112,7 +119,9 @@ router.post("/add-professor", verifyStudent, async (req, res) => {
     });
 
     if (existing)
-      return res.status(400).json({ message: "Professor already exists in database." });
+      return res
+        .status(400)
+        .json({ message: "Professor already exists in database." });
 
     // Create a new professor (pending approval)
     const newProfessor = new User({
@@ -124,13 +133,14 @@ router.post("/add-professor", verifyStudent, async (req, res) => {
       department,
       country,
       academicTitle,
-      isApproved: false, // must be approved by admin
+      isApproved: false,
     });
 
     await newProfessor.save();
 
     res.status(201).json({
-      message: "Professor submitted successfully and is pending admin approval.",
+      message:
+        "Professor submitted successfully and is pending admin approval.",
     });
   } catch (error) {
     console.error("❌ Error in add-professor:", error.message);
@@ -138,5 +148,9 @@ router.post("/add-professor", verifyStudent, async (req, res) => {
   }
 });
 
+// ✅ Redirect or proxy to professor route for compatibility
+router.get("/my-reviews", (req, res) => {
+  res.redirect("/api/professor/my-reviews");
+});
 
 export default router;

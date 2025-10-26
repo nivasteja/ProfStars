@@ -1,8 +1,9 @@
 // backend/routes/professor.js
 import express from "express";
-import User from "../models/User.js";
-import Subject from "../models/Subject.js";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import Review from "../models/Review.js";
+import Subject from "../models/Subject.js";
 
 const router = express.Router();
 
@@ -13,6 +14,8 @@ const verifyProfessor = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "professor")
+      return res.status(403).json({ message: "Access denied." });
     req.user = decoded;
     next();
   } catch {
@@ -20,33 +23,47 @@ const verifyProfessor = (req, res, next) => {
   }
 };
 
-// 🧑‍🏫 Get professor profile
-router.get("/profile", verifyProfessor, async (req, res) => {
+// ✅ Get logged-in professor profile
+router.get("/me", verifyProfessor, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user || user.role !== "professor") {
-      return res.status(403).json({ message: "Access denied." });
-    }
+    const user = await User.findById(req.user.id).select("-password -__v");
+    if (!user) return res.status(404).json({ message: "Professor not found." });
     res.json(user);
-  } catch {
+  } catch (err) {
+    console.error("❌ Error fetching professor profile:", err.message);
     res.status(500).json({ message: "Failed to fetch profile." });
   }
 });
 
-// ✏️ Update professor profile
-router.put("/profile", verifyProfessor, async (req, res) => {
+// ✅ Update professor profile
+router.put("/update", verifyProfessor, async (req, res) => {
   try {
     const updates = req.body;
     const updated = await User.findByIdAndUpdate(req.user.id, updates, {
       new: true,
     }).select("-password");
     res.json(updated);
-  } catch {
+  } catch (err) {
+    console.error("❌ Error updating professor:", err.message);
     res.status(500).json({ message: "Profile update failed." });
   }
 });
 
-// 📚 Get subjects
+// ✅ Get all reviews for the logged-in professor
+router.get("/my-reviews", verifyProfessor, async (req, res) => {
+  try {
+    const reviews = await Review.find({ professorId: req.user.id })
+      .populate("studentId", "name")
+      .sort({ createdAt: -1 });
+
+    res.json(reviews);
+  } catch (err) {
+    console.error("❌ Error loading professor reviews:", err.message);
+    res.status(500).json({ message: "Failed to load reviews." });
+  }
+});
+
+// ✅ Subjects management (keep your original functionality)
 router.get("/subjects", verifyProfessor, async (req, res) => {
   try {
     const subjects = await Subject.find({ professorId: req.user.id });
@@ -56,7 +73,6 @@ router.get("/subjects", verifyProfessor, async (req, res) => {
   }
 });
 
-// ➕ Add subject
 router.post("/subjects", verifyProfessor, async (req, res) => {
   try {
     const { subjectName, description } = req.body;
@@ -76,7 +92,6 @@ router.post("/subjects", verifyProfessor, async (req, res) => {
   }
 });
 
-// ❌ Delete subject
 router.delete("/subjects/:id", verifyProfessor, async (req, res) => {
   try {
     await Subject.findOneAndDelete({

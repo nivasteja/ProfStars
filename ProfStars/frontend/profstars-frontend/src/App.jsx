@@ -4,11 +4,11 @@ import {
   Route,
   Navigate,
   Link,
+  useNavigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-// ====== Page Imports ======
-import Home from "./pages/Home"; // 🏠 (to be created in Phase 9)
+import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ProfessorDashboard from "./pages/ProfessorDashboard";
@@ -24,17 +24,20 @@ function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const [role, setRole] = useState(localStorage.getItem("role"));
 
-  // ✅ Sync authentication state across tabs
+  // ✅ Sync authentication across tabs and instant updates
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuth(!!localStorage.getItem("token"));
-      setRole(localStorage.getItem("role"));
+      const token = localStorage.getItem("token");
+      const storedRole = localStorage.getItem("role");
+      setIsAuth(!!token);
+      setRole(storedRole);
     };
+
+    checkAuth();
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  // ✅ Logout clears session
   const handleLogout = () => {
     localStorage.clear();
     setIsAuth(false);
@@ -43,7 +46,7 @@ function App() {
 
   return (
     <Router>
-      {/* ✅ Global Navbar (Hidden for Admin pages) */}
+      {/* Navbar - hidden for admin layout */}
       {role !== "admin" && (
         <nav className="navbar">
           <div className="navbar-left">
@@ -66,58 +69,48 @@ function App() {
         </nav>
       )}
 
-      {/* ✅ App Routes */}
       <Routes>
-        {/* =============================
-            PUBLIC / AUTH ROUTES
-        ============================== */}
-        <Route path="/" element={<Home />} /> {/* 🏠 Home page */}
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* =============================
-            ADMIN ROUTES (Protected)
-        ============================== */}
+        {/* Admin Routes */}
         <Route
           path="/admin"
           element={
             isAuth && role === "admin" ? (
               <AdminLayout />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         >
-          {/* Nested inside AdminLayout via <Outlet /> */}
-          <Route index element={<AdminOverview />} /> {/* ✅ Default Admin Page */}
+          <Route index element={<AdminOverview />} />
           <Route path="approvals" element={<AdminDashboard />} />
           <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
 
-        {/* =============================
-            PROFESSOR DASHBOARD
-        ============================== */}
+        {/* Professor Dashboard */}
         <Route
           path="/professor"
           element={
             isAuth && role === "professor" ? (
               <ProfessorDashboard />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* =============================
-            STUDENT DASHBOARD & DETAILS
-        ============================== */}
+        {/* Student Dashboard + Professor Details */}
         <Route
           path="/dashboard"
           element={
             isAuth && role === "student" ? (
               <StudentDashboard />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
@@ -127,14 +120,12 @@ function App() {
             isAuth && role === "student" ? (
               <ProfessorDetails />
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* =============================
-            FALLBACK (404)
-        ============================== */}
+        {/* 404 fallback */}
         <Route
           path="*"
           element={

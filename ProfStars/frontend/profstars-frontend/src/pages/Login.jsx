@@ -22,23 +22,29 @@ const Login = () => {
         "http://localhost:5000/api/auth/login",
         formData
       );
+
+      // ✅ Store login details
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("username", res.data.name);
+
+      // ✅ Trigger other tabs to re-sync
+      window.dispatchEvent(new Event("storage"));
 
       toast.success(`Welcome back, ${res.data.name}!`, {
         position: "top-center",
       });
 
+      // ✅ Navigate based on role
       setTimeout(() => {
         if (res.data.role === "admin") {
           navigate("/admin");
         } else if (res.data.role === "professor") {
-          navigate("/dashboard");
+          navigate("/professor");
         } else {
           navigate("/dashboard");
         }
-      }, 1500);
+      }, 1200);
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed.", {
         position: "top-center",
