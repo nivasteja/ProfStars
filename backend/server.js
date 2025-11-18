@@ -9,7 +9,8 @@ import professorRoutes from "./routes/professor.js";
 import reviewRoutes from "./routes/review.js";
 import adminAnalyticsRoutes from "./routes/adminAnalytics.js";
 import professorAnalytics from "./routes/professorAnalytics.js";
-import universitiesRoutes from "./routes/universities.js"; // ✅ ADD THIS
+import universitiesRoutes from "./routes/universities.js";
+import reportRoutes from "./routes/report.js";
 
 dotenv.config();
 const app = express();
@@ -24,7 +25,8 @@ app.use("/api/professor", professorRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/professor/analytics", professorAnalytics);
-app.use("/api/universities", universitiesRoutes); // ✅ ADD THIS
+app.use("/api/universities", universitiesRoutes);
+app.use("/api/report", reportRoutes);
 
 // Test route
 app.get("/", (req, res) => res.send("ProfStars API running..."));
@@ -32,9 +34,9 @@ app.get("/", (req, res) => res.send("ProfStars API running..."));
 // Database
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Error:", err.message));
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("MongoDB Error:", err.message));
 
 // Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,18 +1,22 @@
 // backend/routes/professor.js
+// Integrated version with all existing functionality + recent professors
 import express from "express";
-import User from "../models/User.js";
-import Subject from "../models/Subject.js";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import Review from "../models/Review.js";
+import Subject from "../models/Subject.js";
 
 const router = express.Router();
 
-// 🔐 Middleware to verify professor token
+// Middleware to verify professor token
 const verifyProfessor = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "No token provided." });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "professor")
+      return res.status(403).json({ message: "Access denied." });
     req.user = decoded;
     next();
   } catch {
@@ -20,33 +24,66 @@ const verifyProfessor = (req, res, next) => {
   }
 };
 
-// 🧑‍🏫 Get professor profile
-router.get("/profile", verifyProfessor, async (req, res) => {
+// Get Recent Professors (Last 5 added) - NEW - PUBLIC ROUTE
+// This should be BEFORE protected routes to avoid middleware blocking
+router.get("/recent", async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user || user.role !== "professor") {
-      return res.status(403).json({ message: "Access denied." });
-    }
+    const recentProfessors = await User.find({ role: "professor" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select(
+        "name email university department country academicTitle averageRating"
+      )
+      .lean();
+
+    res.json(recentProfessors);
+  } catch (error) {
+    console.error("❌ Error fetching recent professors:", error);
+    res.status(500).json({ message: "Error fetching recent professors" });
+  }
+});
+
+// Get logged-in professor profile
+router.get("/me", verifyProfessor, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password -__v");
+    if (!user) return res.status(404).json({ message: "Professor not found." });
     res.json(user);
-  } catch {
+  } catch (err) {
+    console.error("❌ Error fetching professor profile:", err.message);
     res.status(500).json({ message: "Failed to fetch profile." });
   }
 });
 
-// ✏️ Update professor profile
-router.put("/profile", verifyProfessor, async (req, res) => {
+// Update professor profile
+router.put("/update", verifyProfessor, async (req, res) => {
   try {
     const updates = req.body;
     const updated = await User.findByIdAndUpdate(req.user.id, updates, {
       new: true,
     }).select("-password");
     res.json(updated);
-  } catch {
+  } catch (err) {
+    console.error("❌ Error updating professor:", err.message);
     res.status(500).json({ message: "Profile update failed." });
   }
 });
 
-// 📚 Get subjects
+// Get all reviews for the logged-in professor
+router.get("/my-reviews", verifyProfessor, async (req, res) => {
+  try {
+    const reviews = await Review.find({ professorId: req.user.id })
+      .populate("studentId", "name")
+      .sort({ createdAt: -1 });
+
+    res.json(reviews);
+  } catch (err) {
+    console.error("❌ Error loading professor reviews:", err.message);
+    res.status(500).json({ message: "Failed to load reviews." });
+  }
+});
+
+// Subjects management (your original functionality)
 router.get("/subjects", verifyProfessor, async (req, res) => {
   try {
     const subjects = await Subject.find({ professorId: req.user.id });
@@ -56,7 +93,6 @@ router.get("/subjects", verifyProfessor, async (req, res) => {
   }
 });
 
-// ➕ Add subject
 router.post("/subjects", verifyProfessor, async (req, res) => {
   try {
     const { subjectName, description } = req.body;
@@ -76,7 +112,6 @@ router.post("/subjects", verifyProfessor, async (req, res) => {
   }
 });
 
-// ❌ Delete subject
 router.delete("/subjects/:id", verifyProfessor, async (req, res) => {
   try {
     await Subject.findOneAndDelete({
@@ -88,5 +123,48 @@ router.delete("/subjects/:id", verifyProfessor, async (req, res) => {
     res.status(500).json({ message: "Failed to delete subject." });
   }
 });
+// PUT /api/professor/subjects/:id
+router.put("/subjects/:id", verifyProfessor, async (req, res) => {
+  try {
+    const { subjectName, description, courseCode, semester, category } =
+      req.body;
 
+    const updated = await Subject.findOneAndUpdate(
+      { _id: req.params.id, professorId: req.user.id },
+      { subjectName, description, courseCode, semester, category },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "Subject not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update subject" });
+  }
+});
+
+// GET /api/professor/review-stats
+router.get("/review-stats", verifyProfessor, async (req, res) => {
+  try {
+    const reviews = await Review.find({ professorId: req.user.id });
+
+    // Rating breakdown
+    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach((r) => breakdown[r.rating]++);
+
+    // Reviews per subject
+    const subjects = await Subject.find({ professorId: req.user.id });
+    const subjectStats = await Promise.all(
+      subjects.map(async (subject) => {
+        const count = reviews.filter((r) =>
+          r.comment?.toLowerCase().includes(subject.subjectName.toLowerCase())
+        ).length;
+        return { subjectName: subject.subjectName, reviewCount: count };
+      })
+    );
+
+    res.json({ breakdown, subjectStats });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch review stats" });
+  }
+});
 export default router;

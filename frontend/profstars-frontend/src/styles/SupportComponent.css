@@ -1,0 +1,145 @@
+/* --- Support Modal & Button Styles --- */
+
+/* This makes the "Support Us" link look like other footer links */
+.footer-link.support-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #cfa8ff; /* Matches other footer links */
+  cursor: pointer;
+  text-decoration: none;
+}
+.footer-link.support-btn:hover {
+  color: #fff;
+}
+
+/* Modal Overlay */
+.support-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Modal Content */
+.support-modal-content {
+  background: #fff;
+  padding: 24px 30px;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Modal Close Button */
+.support-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.support-modal-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* Modal Header */
+.support-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.support-modal-icon {
+  font-size: 2rem;
+  color: #6a0dad;
+  margin-bottom: 8px;
+}
+.support-modal-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+.support-modal-desc {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+/* Amount Selector */
+.amount-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.amount-btn {
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  min-width: 80px;
+  border-radius: 8px;
+  border: 2px solid #e8d6ff; /* Matches your purple theme */
+  color: #6a0dad; /* Matches your purple theme */
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.amount-btn:hover {
+  background-color: #f9f5ff; /* Light purple hover */
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(106, 13, 173, 0.1);
+}
+.amount-btn.active {
+  background-color: #6a0dad; /* Your main purple */
+  color: #fff;
+  border-color: #6a0dad;
+}
+
+/* PayPal Container */
+.paypal-container {
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1; /* Ensures buttons are clickable */
+}
+
+/* Note */
+.support-note {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Re-add the fadeIn animation here just in case Home.css isn't loaded */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,369 @@
+/* ============================================================
+   GENERAL PAGE DESIGN
+   ============================================================ */
+.explore-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #faf7ff, #e9ddff, #fafafa);
+  font-family: "Poppins", sans-serif;
+  color: #222;
+  padding: 40px 20px;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HERO BANNER
+   ============================================================ */
+.banner-hero {
+  background: linear-gradient(135deg, #6a0dad, #b487ff);
+  border-radius: 20px;
+  padding: 60px 20px;
+  text-align: center;
+  margin-bottom: 35px;
+  box-shadow: 0 10px 28px rgba(106, 13, 173, 0.35);
+}
+
+.banner-content .hero-title {
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: white !important;
+}
+
+.banner-content .hero-subtitle {
+  color: #f4f4f4;
+  margin-top: 8px;
+  font-size: 1.1rem;
+}
+
+/* ============================================================
+   CATEGORY CHIPS
+   ============================================================ */
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #d9cafe;
+  background: #f4ecff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #6a0dad;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+}
+
+.chip.active {
+  background: #6a0dad;
+  color: white;
+  border-color: #6a0dad;
+}
+
+/* ============================================================
+   FILTER BAR
+   ============================================================ */
+.filter-bar {
+  background: rgba(255, 255, 255, 0.55);
+  padding: 10px 15px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto 30px;
+}
+
+.filter-bar input,
+.filter-bar select {
+  min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.filter-toggle,
+.map-toggle {
+  background: #6a0dad;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.view-tabs button {
+  padding: 8px 14px;
+  border-radius: 25px;
+  border: 1px solid #6a0dad;
+  background: white;
+  color: #6a0dad;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.view-tabs button.active,
+.view-tabs button:hover {
+  background: #6a0dad;
+  color: white;
+}
+
+/* ============================================================
+   GRID + CARD
+   ============================================================ */
+.explore-grid-new {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.explore-card-new {
+  background: rgba(255,255,255,0.65);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.45);
+  padding: 25px 20px;
+  box-shadow: 0 8px 20px rgba(106,13,173,.15);
+  backdrop-filter: blur(8px);
+  transition: 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+.explore-card-new:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(106, 13, 173, 0.25);
+}
+
+.explore-card-new h3 {
+  color: #4b007d;
+  margin: 12px 0 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.explore-card-new p {
+  color: #555;
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.visit-link {
+  color: #6a0dad;
+  font-weight: 600;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* ============================================================
+   LIKE BUTTON
+   ============================================================ */
+.like-container {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  cursor: pointer;
+}
+
+.heart {
+  font-size: 1.3rem;
+  color: #bbb;
+}
+
+.heart.active {
+  color: #e11d48;
+}
+
+/* ============================================================
+   AVATARS
+   ============================================================ */
+.prof-avatar {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6a0dad, #b487ff);
+  color: white;
+  font-weight: 700;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uni-icon {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   REPORT BUTTON
+   ============================================================ */
+.report-btn {
+  background: transparent;
+  border: none;
+  color: #b10000;
+  text-decoration: underline;
+  font-weight: 600;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+/* ============================================================
+   MAP VIEW
+   ============================================================ */
+.map-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(106,13,173,.18);
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 30px;
+  align-items: center;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #6a0dad;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* ============================================================
+   REPORT MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,20,20,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.report-modal {
+  background: white;
+  padding: 28px 30px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.report-modal h2 {
+  color: #6a0dad;
+  margin-bottom: 10px;
+}
+
+.modal-uniname {
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.report-modal select,
+.report-modal textarea {
+  width: 100%;
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+}
+
+.submit-report-btn {
+  margin-top: 15px;
+  padding: 10px 14px;
+  background: #6a0dad;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.success-msg {
+  color: #30a14e;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .explore-grid-new {
+    grid-template-columns: 1fr;
+  }
+
+  .banner-content .hero-title {
+    font-size: 1.7rem;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+  }
+}

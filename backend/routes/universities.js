@@ -5,52 +5,114 @@ import University from "../models/University.js";
 
 const router = express.Router();
 
-// Get all countries
+/* ============================================================
+   1️⃣  GET /universities/countries
+   Returns list of countries from your static file
+   ============================================================ */
 router.get("/countries", (req, res) => {
   res.json(countries);
 });
 
-// Get universities by country (API + Database)
+/* ============================================================
+   GEO: Convert University Name → Coordinates (lat/lon)
+   Using OpenStreetMap (Nominatim)
+   ============================================================ */
+async function getCoordinates(universityName, country) {
+  try {
+    const res = await axios.get(
+      "https://nominatim.openstreetmap.org/search",
+      {
+        params: {
+          q: `${universityName}, ${country}`,
+          format: "json",
+          limit: 1,
+        },
+        headers: {
+          "User-Agent": "ProfStars-App/1.0 (contact@example.com)"
+        }
+      }
+    );
+
+    if (res.data.length > 0) {
+      return {
+        lat: parseFloat(res.data[0].lat),
+        lon: parseFloat(res.data[0].lon),
+      };
+    }
+  } catch (err) {
+    console.log("Geocoding failed for:", universityName);
+  }
+
+  return { lat: null, lon: null };
+}
+
+/* ============================================================
+   2️⃣  GET /universities/:country
+   Fetches from:
+   - Hipolabs API
+   - MongoDB Custom Universities
+   Adds: lat & lon for map usage
+   ============================================================ */
 router.get("/:country", async (req, res) => {
   try {
     const country = req.params.country;
 
-    // Fetch from Hipolabs API
+    /* ------------------------------
+       A. Fetch Hipolabs API data
+       ------------------------------ */
     let apiUniversities = [];
     try {
       const response = await axios.get(
-        `http://universities.hipolabs.com/search?country=${encodeURIComponent(
-          country
-        )}`,
+        `http://universities.hipolabs.com/search?country=${encodeURIComponent(country)}`,
         { timeout: 10000 }
       );
       apiUniversities = response.data;
-    } catch (apiError) {
-      console.log("API fetch failed, continuing with DB only");
+    } catch {
+      console.log("Hipolabs API failed — using DB only.");
     }
 
-    // Fetch custom universities from database
+    /* ------------------------------
+       B. Fetch custom MongoDB universities
+       ------------------------------ */
     const dbUniversities = await University.find({ country }).lean();
 
-    // Merge both sources (remove duplicates)
-    const allUniversities = [...apiUniversities];
+    /* ------------------------------
+       C. Merge datasets (avoid duplicates)
+       ------------------------------ */
+    let allUniversities = [...apiUniversities];
 
     dbUniversities.forEach((dbUni) => {
       const exists = apiUniversities.some(
-        (apiUni) => apiUni.name.toLowerCase() === dbUni.name.toLowerCase()
+        (apiUni) =>
+          apiUni.name.toLowerCase() === dbUni.name.toLowerCase()
       );
+
       if (!exists) {
         allUniversities.push({
           name: dbUni.name,
           country: dbUni.country,
           domains: [],
           web_pages: [],
-          alpha_two_code: "",
+          alpha_two_code: dbUni.country.slice(0, 2).toUpperCase(),
         });
       }
     });
 
-    res.json(allUniversities);
+    /* ------------------------------
+       D. Add coordinates to each university
+       ------------------------------ */
+    const universitiesWithCoords = await Promise.all(
+      allUniversities.map(async (uni) => {
+        const coords = await getCoordinates(uni.name, uni.country);
+        return {
+          ...uni,
+          lat: coords.lat,
+          lon: coords.lon,
+        };
+      })
+    );
+
+    res.json(universitiesWithCoords);
   } catch (error) {
     console.error("Error fetching universities:", error.message);
     res.status(500).json({
@@ -60,16 +122,19 @@ router.get("/:country", async (req, res) => {
   }
 });
 
-// Add new custom university
+/* ============================================================
+   3️⃣  POST /universities/add
+   Add custom university into MongoDB
+   ============================================================ */
 router.post("/add", async (req, res) => {
   try {
     const { name, country } = req.body;
 
     if (!name || !country) {
-      return res.status(400).json({ message: "Name and country are required" });
+      return res.status(400).json({ message: "Name and country are required." });
     }
 
-    // Check if already exists
+    // Check if exists
     const exists = await University.findOne({
       name: { $regex: new RegExp(`^${name}$`, "i") },
       country,
@@ -77,17 +142,17 @@ router.post("/add", async (req, res) => {
 
     if (exists) {
       return res.json({
-        message: "University already exists",
+        message: "University already exists.",
         university: exists,
       });
     }
 
-    // Create new university
+    // Create new entry
     const newUniversity = new University({ name, country });
     await newUniversity.save();
 
     res.status(201).json({
-      message: "University added successfully",
+      message: "University added successfully.",
       university: newUniversity,
     });
   } catch (error) {

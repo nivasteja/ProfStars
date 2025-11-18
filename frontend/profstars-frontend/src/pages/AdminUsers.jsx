@@ -10,7 +10,7 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  // ✅ Memoized loader
+  // Memoized loader
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -30,7 +30,7 @@ const AdminUsers = () => {
     loadUsers();
   }, [loadUsers]);
 
-  // ✅ Approve / Reject / Delete
+  // Approve / Reject / Delete
   const handleAction = async (id, action) => {
     try {
       const endpoint =
@@ -40,9 +40,13 @@ const AdminUsers = () => {
           ? `/reject/${id}`
           : `/delete/${id}`;
 
-      await axios.put(`http://localhost:5000/api/admin${endpoint}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.put(
+        `http://localhost:5000/api/admin${endpoint}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       toast.success(`User ${action}d successfully`);
       loadUsers();
     } catch (err) {
@@ -90,7 +94,13 @@ const AdminUsers = () => {
                 <td>{u.name}</td>
                 <td>{u.email}</td>
                 <td className={`role-${u.role}`}>{u.role}</td>
-                <td>{u.role === "professor" ? (u.isApproved ? "✅ Approved" : "🕒 Pending") : "—"}</td>
+                <td>
+                  {u.role === "professor"
+                    ? u.isApproved
+                      ? "Approved"
+                      : "Pending"
+                    : "—"}
+                </td>
                 <td>
                   {u.role === "professor" && !u.isApproved && (
                     <>

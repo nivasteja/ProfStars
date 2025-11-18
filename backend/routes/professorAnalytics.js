@@ -5,13 +5,15 @@ import mongoose from "mongoose";
 
 const router = express.Router();
 
-// 🧩 Verify Professor
+// Verify Professor
 const verifyProfessor = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "No token" });
 
   try {
-    const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+    const decoded = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64").toString()
+    );
     if (decoded.role !== "professor")
       return res.status(403).json({ message: "Forbidden" });
     req.userId = decoded.id;
@@ -20,17 +22,20 @@ const verifyProfessor = (req, res, next) => {
     return res.status(403).json({ message: "Invalid token" });
   }
 };
-
-// 📊 Professor Analytics Summary
+//  Professor Analytics Summary
 router.get("/summary", verifyProfessor, async (req, res) => {
   try {
     const profId = new mongoose.Types.ObjectId(req.userId);
 
-    const reviews = await Review.find({ professorId: profId }).sort({ createdAt: 1 });
+    const reviews = await Review.find({ professorId: profId }).sort({
+      createdAt: 1,
+    });
     const totalReviews = reviews.length;
     const avgRating =
       reviews.length > 0
-        ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(2)
+        ? (
+            reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length
+          ).toFixed(2)
         : 0;
 
     // Monthly review trend
@@ -38,7 +43,10 @@ router.get("/summary", verifyProfessor, async (req, res) => {
       { $match: { professorId: profId } },
       {
         $group: {
-          _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
           avgRating: { $avg: "$rating" },
           totalReviews: { $sum: 1 },
         },
