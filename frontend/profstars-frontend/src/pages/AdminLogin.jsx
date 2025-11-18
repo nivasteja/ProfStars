@@ -5,7 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/Auth.css";
 
-const Login = () => {
+const AdminLogin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ const Login = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "http://localhost:5000/api/auth/admin-login",
         formData
       );
 
@@ -68,18 +68,14 @@ const Login = () => {
         position: "top-center",
       });
 
-      // Navigate based on role
+      // Navigate to admin dashboard
       setTimeout(() => {
-        if (res.data.role === "professor") {
-          navigate("/professor");
-        } else {
-          navigate("/dashboard");
-        }
+        navigate("/admin");
       }, 1200);
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          "Login failed. Please check your credentials.",
+          "Admin login failed. Invalid credentials.",
         {
           position: "top-center",
         }
@@ -93,14 +89,17 @@ const Login = () => {
     <div className="auth-page">
       <ToastContainer />
       <div className="auth-card">
-        <h2>Welcome Back</h2>
+        <div className="admin-badge">
+          <span>🔒</span>
+          <h2>Admin Access</h2>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-field">
             <input
               type="email"
               name="email"
-              placeholder="Email Address"
+              placeholder="Admin Email Address"
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? "error" : ""}
@@ -112,7 +111,7 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder="Admin Password"
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? "error" : ""}
@@ -122,17 +121,17 @@ const Login = () => {
             )}
           </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
+          <button type="submit" disabled={loading} className="admin-btn">
+            {loading ? "Authenticating..." : "Admin Login"}
           </button>
         </form>
 
         <p className="auth-link">
-          Don't have an account? <Link to="/register">Register here</Link>
+          Not an admin? <Link to="/login">Regular Login</Link>
         </p>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default AdminLogin;

@@ -1,134 +1,418 @@
-.prof-dashboard {
-  background: #f9fafb;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.dashboard {
   min-height: 100vh;
-  padding: 30px;
-  font-family: "Poppins", sans-serif;
+  background: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+    sans-serif;
+  color: #1f2937;
 }
 
-h1 {
-  text-align: center;
-  color: #4f46e5;
-  margin-bottom: 25px;
-}
-
-/* ===== Profile Section ===== */
-.profile-card {
+/* Navigation */
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 24px;
   background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+  border-bottom: 1px solid #e5e7eb;
+  justify-content: center;
 }
 
-.profile-card h2 {
-  color: #4f46e5;
-  margin-bottom: 15px;
-}
-
-.profile-card p {
-  margin: 6px 0;
-  color: #374151;
-}
-
-.edit-btn {
-  background: #4f46e5;
-  color: white;
+.nav-tab {
+  padding: 10px 24px;
   border: none;
-  padding: 8px 15px;
-  border-radius: 6px;
-  margin-top: 15px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.edit-btn:hover {
-  background: #4338ca;
+.nav-tab:hover {
+  background: #f3f4f6;
+  color: #111827;
 }
 
-/* ===== Edit Form ===== */
-.edit-form input {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
+.nav-tab.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Content */
+.content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  color: #111827;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.section-header h1 {
+  margin: 0;
+}
+
+/* Buttons */
+.btn-edit {
+  padding: 8px 20px;
   border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.btn-primary {
+  padding: 10px 24px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  padding: 10px 24px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.btn-delete {
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  background: #fee2e2;
+}
+
+/* Profile - Read Mode */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px 48px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field p {
+  font-size: 16px;
+  color: #111827;
+}
+
+/* Profile - Edit Mode */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-field input,
+.form-field select {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #111827;
+  background: white;
+  transition: all 0.2s;
   font-family: inherit;
 }
 
-.edit-buttons {
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-field input:disabled,
+.form-field select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
 }
 
-.save-btn {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 15px;
-  cursor: pointer;
+/* Reviews */
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.cancel-btn {
-  background: #e5e7eb;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 15px;
-  cursor: pointer;
+.review {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
 }
 
-/* ===== Reviews Section ===== */
-.reviews-card {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+.review:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.reviews-card h2 {
-  color: #4f46e5;
-  margin-bottom: 15px;
+.review-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.review-card {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 10px 0;
-}
-
-.review-card:last-child {
-  border-bottom: none;
-}
-
-.review-header {
+.reviewer {
+  font-size: 15px;
   font-weight: 600;
   color: #111827;
 }
 
-.review-comment {
-  color: #374151;
-  margin: 4px 0;
+.stars {
+  font-size: 16px;
+  color: #fbbf24;
+  letter-spacing: 2px;
+}
+
+.review-text {
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 12px;
 }
 
 .review-date {
   font-size: 13px;
-  color: #6b7280;
+  color: #9ca3af;
 }
 
-.no-reviews {
-  text-align: center;
-  color: #6b7280;
+/* Subjects */
+.subject-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
 }
 
-.loading {
-  text-align: center;
-  color: #4f46e5;
+.subject-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #111827;
+  font-family: inherit;
+}
+
+.subject-form input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.subjects {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subject {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.subject:hover {
+  border-color: #d1d5db;
+}
+
+.subject h3 {
+  font-size: 16px;
   font-weight: 600;
-  margin-top: 50px;
+  color: #111827;
+  margin-bottom: 4px;
 }
 
+.subject p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Analytics */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.stat {
+  padding: 32px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+}
+
+.stat-value {
+  display: block;
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.chart-container {
+  padding: 24px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.custom-tooltip {
+  background: white;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 15px;
+  padding: 48px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .profile-card,
-  .reviews-card {
-    padding: 20px;
+  .content {
+    padding: 32px 16px;
+  }
+
+  .section {
+    padding: 28px 20px;
+  }
+
+  .section h1 {
+    font-size: 24px;
+  }
+
+  .profile-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 40px;
+  }
+
+  .subject-form {
+    flex-direction: column;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
   }
 }

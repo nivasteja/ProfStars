@@ -1,143 +1,189 @@
+/* ProfessorDetails.css */
+
+/* --- General Page --- */
 .prof-details {
-  padding: 30px;
-  background: #f9fafb;
-  min-height: 100vh;
-  font-family: "Poppins", sans-serif;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
+/* Loading text */
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* --- Professor Header Card --- */
 .prof-header {
-  background: white;
-  border-radius: 10px;
-  padding: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
 
-.prof-header h2 {
-  color: #111827;
-  font-size: 28px;
-  margin-bottom: 10px;
+.prof-info-card {
+  background: #f5f5f5;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.prof-header p {
-  margin: 6px 0;
-  color: #374151;
+.prof-info-card h2.prof-name {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  color: #1e3a8a; /* deep blue */
 }
 
-.prof-header h3 {
-  color: #4f46e5;
-  font-weight: 600;
-  margin-top: 10px;
+.prof-info-card p {
+  margin: 0.3rem 0;
+  line-height: 1.4;
 }
 
-/* =====================
-   Review Form Styling
-===================== */
-.review-form {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+.avg-rating {
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: #f59e0b; /* amber */
+}
+
+/* --- Social Links --- */
+.social-links {
+  margin-top: 1rem;
+}
+
+.social-links p {
+  margin: 0.3rem 0;
+}
+
+.social-links a {
+  color: #2563eb; /* blue */
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  text-decoration: underline;
+}
+
+/* --- Subjects Section --- */
+.subjects-section {
+  margin-bottom: 2rem;
+}
+
+.subjects-section h3 {
+  margin-bottom: 1rem;
+  color: #1e40af;
+}
+
+.subjects-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.subject-card {
+  background: #e0f2fe;
+  padding: 1rem;
+  border-radius: 8px;
+  flex: 1 1 calc(50% - 1rem);
+  min-width: 200px;
+}
+
+.subject-card h4 {
+  margin-top: 0;
+  margin-bottom: 0.3rem;
+  color: #0369a1;
+}
+
+.subject-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+/* --- Review Section --- */
+.review-section {
+  margin-bottom: 2rem;
+  background: #fef3c7;
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .review-form h3 {
-  color: #4f46e5;
-  margin-bottom: 15px;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #b45309;
 }
 
 .review-form label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
+  margin: 0.5rem 0 0.2rem;
 }
 
 .review-form select,
 .review-form textarea {
   width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 15px;
-  font-family: inherit;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 0.5rem;
 }
 
-.review-form textarea {
-  resize: none;
-  height: 80px;
-}
-
-.submit-btn {
-  background: #4f46e5;
+.review-form button.submit-btn {
+  background: #b45309;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
+  transition: background 0.2s ease;
 }
 
-.submit-btn:hover {
-  background: #4338ca;
+.review-form button.submit-btn:hover {
+  background: #92400e;
 }
 
-/* =====================
-   Reviews Section
-===================== */
-.reviews-section {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+.info-msg {
+  color: #b45309;
+  font-style: italic;
 }
 
+/* --- Reviews List --- */
 .reviews-section h3 {
-  color: #4f46e5;
-  margin-bottom: 20px;
-  text-align: center;
+  color: #1e3a8a;
+  margin-bottom: 1rem;
 }
 
 .review-card {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 15px 0;
-}
-
-.review-card:last-child {
-  border-bottom: none;
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .review-header {
-  font-weight: 600;
-  color: #111827;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
 }
 
 .review-comment {
-  color: #374151;
-  margin: 5px 0;
+  margin: 0.3rem 0;
 }
 
 .review-date {
-  font-size: 13px;
-  color: #6b7280;
+  font-size: 0.8rem;
+  color: #555;
 }
 
-.no-reviews {
-  text-align: center;
-  color: #6b7280;
-  margin-top: 10px;
-}
-
-.loading {
-  text-align: center;
-  color: #4f46e5;
-  font-weight: 600;
-  margin-top: 50px;
-}
-
+/* --- Responsive --- */
 @media (max-width: 768px) {
-  .prof-header,
-  .review-form,
-  .reviews-section {
-    padding: 20px;
+  .subjects-list {
+    flex-direction: column;
+  }
+
+  .subject-card {
+    flex: 1 1 100%;
   }
 }
