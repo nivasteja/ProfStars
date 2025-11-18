@@ -1,0 +1,252 @@
+/* =========================================
+   ProfStars Explore 2.0 – Glassmorphic Design
+   ========================================= */
+
+.explore-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #faf7ff, #e9ddff, #fafafa);
+  font-family: "Poppins", sans-serif;
+  color: #222;
+  padding: 60px 25px;
+  overflow-x: hidden;
+}
+
+/* ---------------- HERO ---------------- */
+.explore-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #4b007d;
+  background: linear-gradient(90deg, #6a0dad, #b487ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  margin-top: 8px;
+}
+
+/* ---------------- FILTERS ---------------- */
+.filters-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  max-width: 900px;
+  margin: 0 auto 40px;
+  backdrop-filter: blur(15px);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 15px 20px;
+  box-shadow: 0 8px 20px rgba(106, 13, 173, 0.1);
+}
+
+.filters-box input,
+.filters-box select {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.filters-box input:focus,
+.filters-box select:focus {
+  border-color: #6a0dad;
+  box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.1);
+  outline: none;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.view-tabs button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6a0dad;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.view-tabs button.active,
+.view-tabs button:hover {
+  background: #6a0dad;
+  color: white;
+  box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
+}
+
+/* ---------------- GRID ---------------- */
+.explore-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ---------------- CARD ---------------- */
+.explore-card-new {
+  position: relative;
+  padding: 25px 20px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 20px rgba(106, 13, 173, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.explore-card-new:hover {
+  box-shadow: 0 12px 24px rgba(106, 13, 173, 0.25);
+  transform: translateY(-5px);
+}
+
+.explore-card-new h3 {
+  color: #4b007d;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 10px 0 5px;
+}
+
+.explore-card-new p {
+  color: #555;
+  font-size: 0.9rem;
+  margin: 3px 0;
+}
+
+.explore-card-new a {
+  color: #6a0dad;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 8px;
+  transition: color 0.3s ease;
+}
+
+.explore-card-new a:hover {
+  color: #450090;
+}
+
+/* ---------------- PROFESSOR AVATAR ---------------- */
+.prof-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6a0dad, #b487ff);
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+
+/* ---------------- LIKE ---------------- */
+.like-container {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  cursor: pointer;
+}
+
+.heart {
+  font-size: 1.2rem;
+  color: #bbb;
+  transition: all 0.3s ease;
+}
+
+.heart.active {
+  color: #e11d48;
+  transform: scale(1.2);
+}
+
+/* ---------------- RATING ---------------- */
+.rating {
+  color: #f59e0b;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* ---------------- INSIGHT SECTION ---------------- */
+.insight-section {
+  margin-top: 80px;
+  text-align: center;
+}
+
+.insight-section h2 {
+  color: #4b007d;
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+.insight-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+.insight-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  padding: 25px 35px;
+  box-shadow: 0 4px 12px rgba(106, 13, 173, 0.1);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(106, 13, 173, 0.25);
+}
+
+.insight-card h3 {
+  font-size: 1.8rem;
+  color: #6a0dad;
+  margin-bottom: 4px;
+}
+
+.insight-card p {
+  color: #555;
+  font-weight: 500;
+}
+
+/* ---------------- NO RESULTS ---------------- */
+.no-results {
+  color: #777;
+  margin-top: 40px;
+  font-size: 1rem;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 768px) {
+  .filters-box {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .explore-grid-new {
+    grid-template-columns: 1fr;
+  }
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  .insight-grid {
+    flex-direction: column;
+  }
+}

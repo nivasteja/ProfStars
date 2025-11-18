@@ -1,0 +1,123 @@
+/* =======================================
+   ProfStars Admin Overview – Light Theme
+   ======================================= */
+
+.admin-overview {
+  padding: 40px 30px 60px;
+  font-family: "Poppins", sans-serif;
+  color: #222;
+  background: #f9fafc;
+  min-height: 100vh;
+}
+
+.admin-overview h1 {
+  text-align: center;
+  color: #4b0082;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 40px;
+}
+
+/* Grid */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+/* Cards */
+.overview-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 25px 20px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.overview-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(106, 13, 173, 0.15);
+}
+
+.overview-card .icon {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  opacity: 0.85;
+}
+
+.overview-card h3 {
+  font-size: 1rem;
+  color: #444;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.overview-card p {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Color Variants */
+.overview-card.purple .icon,
+.overview-card.purple p {
+  color: #6a0dad;
+}
+
+.overview-card.green .icon,
+.overview-card.green p {
+  color: #059669;
+}
+
+.overview-card.orange .icon,
+.overview-card.orange p {
+  color: #ea580c;
+}
+
+.overview-card.blue .icon,
+.overview-card.blue p {
+  color: #2563eb;
+}
+
+.overview-card.pink .icon,
+.overview-card.pink p {
+  color: #db2777;
+}
+
+.overview-card.yellow .icon,
+.overview-card.yellow p {
+  color: #ca8a04;
+}
+
+/* Loading State */
+.overview-loading {
+  text-align: center;
+  color: #777;
+  padding: 80px;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .overview-card {
+    padding: 20px;
+  }
+
+  .overview-card .icon {
+    font-size: 1.8rem;
+  }
+
+  .overview-card p {
+    font-size: 1.5rem;
+  }
+}

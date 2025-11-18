@@ -1,0 +1,42 @@
+// backend/server.js
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+
+// Route imports
+import authRoutes from "./routes/auth.js";
+import adminRoutes from "./routes/admin.js";
+import adminAnalyticsRoutes from "./routes/adminAnalytics.js";
+import professorRoutes from "./routes/professor.js";
+import reviewRoutes from "./routes/review.js";
+import professorAnalytics from "./routes/professorAnalytics.js";
+import universitiesRoutes from "./routes/universities.js";
+
+dotenv.config();
+const app = express();
+
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.json());
+
+// ✅ Routes – mount analytics routes before general admin routes
+app.use("/api/auth", authRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes); // must be above /api/admin
+app.use("/api/admin", adminRoutes);
+app.use("/api/professor", professorRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/professor/analytics", professorAnalytics);
+app.use("/api/universities", universitiesRoutes);
+
+// ✅ Test route
+app.get("/", (req, res) => res.send("ProfStars API running..."));
+
+// ✅ MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err.message));
+
+// ✅ Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
