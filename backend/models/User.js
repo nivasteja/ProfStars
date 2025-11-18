@@ -20,7 +20,16 @@ const userSchema = new mongoose.Schema(
         return this.role !== "professor"; // professors need admin approval
       },
     },
-
+    // Add to userSchema
+    bio: { type: String, trim: true, maxlength: 500 },
+    profilePhoto: { type: String }, // URL to photo
+    socialLinks: {
+      linkedin: { type: String },
+      researchGate: { type: String },
+      googleScholar: { type: String },
+    },
+    profileViews: { type: Number, default: 0 },
+    isProfilePublic: { type: Boolean, default: true },
     // Academic / global fields
     country: { type: String, trim: true },
     university: { type: String, trim: true },

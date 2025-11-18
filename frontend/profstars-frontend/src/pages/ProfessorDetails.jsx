@@ -13,7 +13,7 @@ const ProfessorDetails = () => {
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
   const token = localStorage.getItem("token");
 
-  // ✅ Memoized data loader (no React hook warnings)
+  // Memoized data loader (no React hook warnings)
   const loadDetails = useCallback(async () => {
     try {
       const res = await axios.get(
@@ -29,12 +29,12 @@ const ProfessorDetails = () => {
     }
   }, [id, token]);
 
-  // ✅ Load data on mount and when professor ID changes
+  // Load data on mount and when professor ID changes
   useEffect(() => {
     loadDetails();
   }, [loadDetails]);
 
-  // 📝 Submit new review
+  // Submit new review
   const submitReview = async (e) => {
     e.preventDefault();
     if (!newReview.comment.trim()) {
@@ -50,7 +50,7 @@ const ProfessorDetails = () => {
       setNewReview({ rating: 5, comment: "" });
       loadDetails(); // Reload updated reviews
     } catch (err) {
-      console.error("❌ Review submission failed:", err);
+      console.error("Review submission failed:", err);
       toast.error(err.response?.data?.message || "Failed to submit review.");
     }
   };
@@ -65,16 +65,26 @@ const ProfessorDetails = () => {
           {/* Professor Info */}
           <div className="prof-header">
             <h2>{professor.name}</h2>
-            <p><strong>University:</strong> {professor.university || "N/A"}</p>
-            <p><strong>Department:</strong> {professor.department || "N/A"}</p>
-            <p><strong>Country:</strong> {professor.country || "N/A"}</p>
+            <p>
+              <strong>University:</strong> {professor.university || "N/A"}
+            </p>
+            <p>
+              <strong>Department:</strong> {professor.department || "N/A"}
+            </p>
+            <p>
+              <strong>Country:</strong> {professor.country || "N/A"}
+            </p>
             {professor.academicTitle && (
-              <p><strong>Academic Title:</strong> {professor.academicTitle}</p>
+              <p>
+                <strong>Academic Title:</strong> {professor.academicTitle}
+              </p>
             )}
             {professor.experienceYears && (
-              <p><strong>Experience:</strong> {professor.experienceYears} years</p>
+              <p>
+                <strong>Experience:</strong> {professor.experienceYears} years
+              </p>
             )}
-            <h3>⭐ Average Rating: {avgRating}</h3>
+            <h3>Average Rating: {avgRating}</h3>
           </div>
 
           {/* Review Form */}
@@ -121,7 +131,8 @@ const ProfessorDetails = () => {
               reviews.map((r) => (
                 <div key={r._id} className="review-card">
                   <p className="review-header">
-                    <strong>{r.studentId?.name || "Anonymous"}</strong> — ⭐ {r.rating}
+                    <strong>{r.studentId?.name || "Anonymous"}</strong> — ⭐{" "}
+                    {r.rating}
                   </p>
                   <p className="review-comment">{r.comment}</p>
                   <p className="review-date">

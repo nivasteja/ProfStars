@@ -6,7 +6,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching user data (replace with your API call)
+    // Simulate fetching user data
     const token = localStorage.getItem("token");
     const name = localStorage.getItem("username");
     const role = localStorage.getItem("role");
@@ -33,7 +33,7 @@ const Dashboard = () => {
       ) : (
         <div className="dashboard-content fade-in">
           <header className="dashboard-header">
-            <h1>Welcome, {user.name} 👋</h1>
+            <h1>Welcome, {user.name}</h1>
             <p className="role-badge">
               Role: <span>{user.role.toUpperCase()}</span>
             </p>

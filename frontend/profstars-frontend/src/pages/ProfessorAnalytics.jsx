@@ -20,9 +20,12 @@ const ProfessorAnalytics = () => {
 
   const loadData = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/professor/analytics/summary", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        "http://localhost:5000/api/professor/analytics/summary",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setData(res.data);
     } catch (err) {
       console.error("Error loading professor analytics:", err);
@@ -33,8 +36,7 @@ const ProfessorAnalytics = () => {
     loadData();
   }, [loadData]);
 
-  if (!data)
-    return <p className="loading">Loading analytics...</p>;
+  if (!data) return <p className="loading">Loading analytics...</p>;
 
   const chartData = data.monthly.map((m) => ({
     month: `${m._id.month}/${m._id.year}`,
@@ -44,22 +46,22 @@ const ProfessorAnalytics = () => {
 
   return (
     <div className="prof-analytics">
-      <h1>📈 My Performance Analytics</h1>
+      <h1>My Performance Analytics</h1>
 
       <div className="analytics-cards">
         <div className="card">
-          <h3>⭐ Average Rating</h3>
+          <h3>Average Rating</h3>
           <p>{data.avgRating}</p>
         </div>
         <div className="card">
-          <h3>💬 Total Reviews</h3>
+          <h3>Total Reviews</h3>
           <p>{data.totalReviews}</p>
         </div>
       </div>
 
       <div className="charts">
         <div className="chart-box">
-          <h2>⭐ Average Rating Over Time</h2>
+          <h2>Average Rating Over Time</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -67,13 +69,18 @@ const ProfessorAnalytics = () => {
               <YAxis domain={[0, 5]} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="avgRating" stroke="#4f46e5" strokeWidth={2} />
+              <Line
+                type="monotone"
+                dataKey="avgRating"
+                stroke="#4f46e5"
+                strokeWidth={2}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="chart-box">
-          <h2>💬 Reviews Per Month</h2>
+          <h2>Reviews Per Month</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />

@@ -1,6 +1,3 @@
-/* =============================
-   Global Reset and Base Styles
-   ============================= */
 * {
   margin: 0;
   padding: 0;
@@ -13,14 +10,11 @@ body,
   height: 100%;
   width: 100%;
   font-family: "Poppins", system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: #1f2937; /* Default text color */
-  background: #ffffff; /* Default background for normal pages */
+  color: #1f2937;
+  background: #ffffff;
   overflow-x: hidden;
 }
 
-/* =============================
-   Links
-   ============================= */
 a {
   font-weight: 500;
   color: #6d28d9;
@@ -32,9 +26,6 @@ a:hover {
   color: #7c3aed;
 }
 
-/* =============================
-   Headings and Text
-   ============================= */
 h1,
 h2,
 h3,
@@ -50,9 +41,6 @@ p {
   line-height: 1.6;
 }
 
-/* =============================
-   Buttons
-   ============================= */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -75,9 +63,6 @@ button:focus-visible {
   outline: 3px solid #c4b5fd;
 }
 
-/* =============================
-   Responsive Utility Classes
-   ============================= */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -100,9 +85,6 @@ button:focus-visible {
   margin-top: 1.5rem;
 }
 
-/* =============================
-   Auth Pages Gradient Override
-   ============================= */
 .auth-page {
   position: fixed;
   top: 0;
@@ -116,9 +98,6 @@ button:focus-visible {
   z-index: 9999;
 }
 
-/* =============================
-   Fade-in Animation
-   ============================= */
 @keyframes fadeIn {
   from {
     opacity: 0;

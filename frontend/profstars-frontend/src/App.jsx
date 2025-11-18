@@ -1,16 +1,19 @@
+// frontend/src/App.jsx
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  Link,
+  useLocation,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-// ====== Page Imports ======
-import Home from "./pages/Home"; // 🏠 (to be created in Phase 9)
+import Home from "./pages/Home";
+import Navbar from "./components/Navbar";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Explore from "./pages/Explore";
+import AdminLogin from "./pages/AdminLogin";
 import ProfessorDashboard from "./pages/ProfessorDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ProfessorDetails from "./pages/ProfessorDetails";
@@ -24,117 +27,111 @@ function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const [role, setRole] = useState(localStorage.getItem("role"));
 
-  // ✅ Sync authentication state across tabs
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuth(!!localStorage.getItem("token"));
-      setRole(localStorage.getItem("role"));
+      const token = localStorage.getItem("token");
+      const storedRole = localStorage.getItem("role");
+      setIsAuth(!!token);
+      setRole(storedRole);
     };
+
+    checkAuth();
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  // ✅ Logout clears session
   const handleLogout = () => {
     localStorage.clear();
     setIsAuth(false);
     setRole(null);
   };
 
-  return (
-    <Router>
-      {/* ✅ Global Navbar (Hidden for Admin pages) */}
-      {role !== "admin" && (
-        <nav className="navbar">
-          <div className="navbar-left">
-            <Link to="/" className="brand">
-              ProfStars
-            </Link>
-          </div>
-          <div className="navbar-right">
-            {!isAuth ? (
-              <>
-                <Link to="/login">Login</Link>
-                <Link to="/register">Register</Link>
-              </>
-            ) : (
-              <button className="logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            )}
-          </div>
-        </nav>
-      )}
+  // --- THIS IS THE FIX ---
+  const location = useLocation();
+  const path = location.pathname;
 
-      {/* ✅ App Routes */}
+  // Hide on all admin routes
+  const isAdminRoute = path.startsWith("/admin");
+  // Hide ONLY on the main professor dashboard (path is exactly "/professor")
+  const isProfessorDashboard = path === "/professor";
+
+  const showNavbar = !isAdminRoute && !isProfessorDashboard;
+  // --- END OF FIX ---
+
+  return (
+    <>
+      {showNavbar && <Navbar isAuth={isAuth} onLogout={handleLogout} />}
+
       <Routes>
-        {/* =============================
-            PUBLIC / AUTH ROUTES
-        ============================== */}
-        <Route path="/" element={<Home />} /> {/* 🏠 Home page */}
+        {/* All your <Route> components go here... */}
+        {/* ...they are all correct, no changes needed to them. */}
+
+        {/* ---------- PUBLIC ROUTES ---------- */}
+        <Route path="/" element={<Home />} />
+        <Route path="/explore" element={<Explore />} />
+
+        {/* ---------- LOGIN / REGISTER always accessible ---------- */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* =============================
-            ADMIN ROUTES (Protected)
-        ============================== */}
-        <Route
-          path="/admin"
-          element={
-            isAuth && role === "admin" ? (
-              <AdminLayout />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        >
-          {/* Nested inside AdminLayout via <Outlet /> */}
-          <Route index element={<AdminOverview />} /> {/* ✅ Default Admin Page */}
-          <Route path="approvals" element={<AdminDashboard />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
-        </Route>
-
-        {/* =============================
-            PROFESSOR DASHBOARD
-        ============================== */}
-        <Route
-          path="/professor"
-          element={
-            isAuth && role === "professor" ? (
-              <ProfessorDashboard />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* =============================
-            STUDENT DASHBOARD & DETAILS
-        ============================== */}
+        {/* ---------- AUTH-PROTECTED ROUTES ---------- */}
         <Route
           path="/dashboard"
           element={
             isAuth && role === "student" ? (
               <StudentDashboard />
             ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/professor/:id"
-          element={
-            isAuth && role === "student" ? (
-              <ProfessorDetails />
-            ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
 
-        {/* =============================
-            FALLBACK (404)
-        ============================== */}
+        <Route
+          path="/professor"
+          element={
+            isAuth && role === "professor" ? (
+              <ProfessorDashboard />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/professor/:id"
+          element={
+            isAuth ? <ProfessorDetails /> : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* ---------- ADMIN ROUTES ---------- */}
+        <Route
+          path="/admin-login"
+          element={
+            isAuth && role === "admin" ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <AdminLogin />
+            )
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            isAuth && role === "admin" ? (
+              <AdminLayout />
+            ) : (
+              <Navigate to="/admin-login" replace />
+            )
+          }
+        >
+          <Route index element={<AdminOverview />} />
+          <Route path="approvals" element={<AdminDashboard />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+        </Route>
+
+        {/* ---------- 404 PAGE ---------- */}
         <Route
           path="*"
           element={
@@ -144,8 +141,13 @@ function App() {
           }
         />
       </Routes>
+    </>
+  );
+}
+export default function AppWrapper() {
+  return (
+    <Router>
+      <App />
     </Router>
   );
 }
-
-export default App;

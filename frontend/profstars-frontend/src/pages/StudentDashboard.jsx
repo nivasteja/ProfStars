@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "../styles/StudentDashboard.css";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StudentDashboard = () => {
   const [professors, setProfessors] = useState([]);
@@ -15,6 +16,7 @@ const StudentDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedProfessor, setSelectedProfessor] = useState(null);
   const [review, setReview] = useState({ rating: 0, comment: "" });
+  const [reviewErrors, setReviewErrors] = useState({});
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -73,22 +75,51 @@ const StudentDashboard = () => {
   // Fetch professors
   const fetchProfessors = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/professors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `http://localhost:5000/api/review/professors?q=${encodeURIComponent(
+          search
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setProfessors(res.data);
     } catch (error) {
       console.error("Error fetching professors:", error);
     }
-  }, [token]);
+  }, [token, search]);
 
   useEffect(() => {
     fetchProfessors();
   }, [fetchProfessors]);
 
+  // Validate review form
+  const validateReview = () => {
+    const errors = {};
+
+    if (!review.rating || review.rating < 1 || review.rating > 5) {
+      errors.rating = "Please select a rating between 1 and 5";
+    }
+
+    if (!review.comment.trim()) {
+      errors.comment = "Please write a comment";
+    } else if (review.comment.trim().length < 10) {
+      errors.comment = "Comment must be at least 10 characters";
+    } else if (review.comment.trim().length > 500) {
+      errors.comment = "Comment must not exceed 500 characters";
+    }
+
+    setReviewErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   // Handle review submission
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateReview()) {
+      toast.error("Please fix the errors in your review");
+      return;
+    }
+
     try {
       await axios.post(
         `http://localhost:5000/api/reviews/${selectedProfessor._id}`,
@@ -97,11 +128,24 @@ const StudentDashboard = () => {
       );
       setShowModal(false);
       setReview({ rating: 0, comment: "" });
+      setReviewErrors({});
       fetchProfessors();
-      alert("Review submitted successfully!");
+      toast.success("Review submitted successfully!");
     } catch (err) {
       console.error("Error submitting review:", err);
-      alert("Failed to submit review. Please try again.");
+      toast.error(
+        err.response?.data?.message ||
+          "Failed to submit review. Please try again."
+      );
+    }
+  };
+
+  // Handle review field changes
+  const handleReviewChange = (field, value) => {
+    setReview({ ...review, [field]: value });
+    // Clear error for this field
+    if (reviewErrors[field]) {
+      setReviewErrors({ ...reviewErrors, [field]: "" });
     }
   };
 
@@ -122,7 +166,7 @@ const StudentDashboard = () => {
     <div className="student-dashboard">
       <h1>🎓 Explore Professors</h1>
 
-      {/* 🔍 Filters Section */}
+      {/* Filters Section */}
       <div className="filters-grid">
         <input
           type="text"
@@ -183,7 +227,7 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* 🧑‍🏫 Professor Cards */}
+      {/* Professor Cards */}
       <div className="professor-grid">
         {filteredProfessors.length === 0 ? (
           <div className="no-results">
@@ -227,6 +271,8 @@ const StudentDashboard = () => {
                   onClick={() => {
                     setSelectedProfessor(prof);
                     setShowModal(true);
+                    setReview({ rating: 0, comment: "" });
+                    setReviewErrors({});
                   }}
                 >
                   Add Review
@@ -243,42 +289,63 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      {/* 💬 Review Modal */}
+      {/* Review Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Add Review for {selectedProfessor.name}</h2>
             <form onSubmit={handleReviewSubmit}>
-              <label>Rating (1–5)</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={review.rating}
-                onChange={(e) =>
-                  setReview({ ...review, rating: Number(e.target.value) })
-                }
-                required
-              />
+              <div className="form-field">
+                <label>Rating (1–5) *</label>
+                <div className="rating-input">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`star ${
+                        review.rating >= star ? "active" : ""
+                      }`}
+                      onClick={() => handleReviewChange("rating", star)}
+                    >
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+                {reviewErrors.rating && (
+                  <span className="error-text">{reviewErrors.rating}</span>
+                )}
+              </div>
 
-              <label>Comment</label>
-              <textarea
-                value={review.comment}
-                onChange={(e) =>
-                  setReview({ ...review, comment: e.target.value })
-                }
-                placeholder="Write your feedback..."
-                required
-              />
+              <div className="form-field">
+                <label>Comment (10-500 characters) *</label>
+                <textarea
+                  value={review.comment}
+                  onChange={(e) =>
+                    handleReviewChange("comment", e.target.value)
+                  }
+                  placeholder="Share your experience with this professor..."
+                  rows="5"
+                  className={reviewErrors.comment ? "error" : ""}
+                />
+                <div className="char-count">
+                  {review.comment.length}/500 characters
+                </div>
+                {reviewErrors.comment && (
+                  <span className="error-text">{reviewErrors.comment}</span>
+                )}
+              </div>
 
               <div className="modal-buttons">
                 <button type="submit" className="submit-btn">
-                  Submit
+                  Submit Review
                 </button>
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setReview({ rating: 0, comment: "" });
+                    setReviewErrors({});
+                  }}
                 >
                   Cancel
                 </button>

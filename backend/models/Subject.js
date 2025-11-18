@@ -12,6 +12,13 @@ const subjectSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    }, // Add to subjectSchema
+    courseCode: { type: String, trim: true }, // e.g., CS101
+    semester: { type: String }, // e.g., Fall 2024
+    category: {
+      type: String,
+      enum: ["Core", "Elective", "Graduate", "Undergraduate", "Other"],
+      default: "Other",
     },
     description: {
       type: String,

@@ -3,19 +3,26 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-/**
- * ============================================
- * REGISTER CONTROLLER
- * Handles registration for Student, Professor, Admin
- * ============================================
- */
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      country,
+      university,
+      department,
+      academicTitle,
+      experienceYears,
+      major,
+    } = req.body;
 
     // Basic validation
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res
+        .status(400)
+        .json({ message: "All required fields must be provided." });
     }
 
     // Check if already exists
@@ -24,37 +31,43 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email already registered." });
     }
 
-    // 🔹 Auto-assign role for admin domain
+    // Determine user role automatically if needed
     let userRole = role || "student";
     if (/@profstars\.(in|com|ca)$/i.test(email)) {
       userRole = "admin";
     }
 
     // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 8);
 
-    // Create user
+    // Create new user
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
       role: userRole,
-      // Professors require admin approval
+      country,
+      university,
+      department,
+      academicTitle,
+      experienceYears,
+      major,
       isApproved: userRole !== "professor",
     });
 
     await newUser.save();
 
-    // Response
-    res.status(201).json({
-      message:
-        userRole === "admin"
-          ? "Admin account created successfully."
-          : userRole === "professor"
-          ? "Professor registration successful. Awaiting admin approval."
-          : "Student registration successful.",
-    });
+    // Success response
+    let message;
+    if (userRole === "admin") {
+      message = "Admin account created successfully.";
+    } else if (userRole === "professor") {
+      message = "Professor registration successful. Awaiting admin approval.";
+    } else {
+      message = "Student registration successful.";
+    }
+
+    res.status(201).json({ message });
   } catch (error) {
     console.error("❌ Error in registerUser:", error.message);
     res.status(500).json({
@@ -64,51 +77,39 @@ export const registerUser = async (req, res) => {
   }
 };
 
-/**
- * ============================================
- * LOGIN CONTROLLER
- * Handles login for all roles
- * ============================================
- */
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: "Please provide email and password." });
+      return res
+        .status(400)
+        .json({ message: "Please provide email and password." });
     }
 
-    // Find user
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials." });
-    }
+    if (!user) return res.status(400).json({ message: "Invalid credentials." });
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials." });
-    }
 
-    // 🔹 Ensure admin role for specific domain
-    if (/@profstars\.(in|com|ca)$/i.test(email)) {
-      user.role = "admin";
-    }
+    // Ensure admin domain enforcement
+    if (/@profstars\.(in|com|ca)$/i.test(email)) user.role = "admin";
 
     // Professors must be approved
     if (user.role === "professor" && !user.isApproved) {
-      return res.status(403).json({ message: "Professor account pending admin approval." });
+      return res
+        .status(403)
+        .json({ message: "Professor account pending admin approval." });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // Successful login
     res.status(200).json({
       message: `Login successful as ${user.role}.`,
       token,
@@ -124,12 +125,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-/**
- * ============================================
- * ADMIN CONTROLLERS
- * For approving or rejecting professors
- * ============================================
- */
 export const getPendingProfessors = async (req, res) => {
   try {
     const pending = await User.find({ role: "professor", isApproved: false });
@@ -149,9 +144,8 @@ export const approveProfessor = async (req, res) => {
       { new: true }
     );
 
-    if (!updated) {
+    if (!updated)
       return res.status(404).json({ message: "Professor not found." });
-    }
 
     res.status(200).json({ message: "Professor approved successfully!" });
   } catch (error) {
@@ -165,9 +159,8 @@ export const rejectProfessor = async (req, res) => {
     const { id } = req.params;
     const removed = await User.findByIdAndDelete(id);
 
-    if (!removed) {
+    if (!removed)
       return res.status(404).json({ message: "Professor not found." });
-    }
 
     res.status(200).json({ message: "Professor rejected and removed." });
   } catch (error) {
