@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "../styles/Auth.css";
 
 const Login = () => {
@@ -34,7 +36,6 @@ const Login = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear error for this field
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -56,19 +57,16 @@ const Login = () => {
         formData
       );
 
-      // Store login details
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("username", res.data.name);
 
-      // Trigger other tabs to re-sync
       window.dispatchEvent(new Event("storage"));
 
       toast.success(`Welcome back, ${res.data.name}!`, {
         position: "top-center",
       });
 
-      // Navigate based on role
       setTimeout(() => {
         if (res.data.role === "professor") {
           navigate("/professor");
@@ -90,47 +88,79 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
-      <ToastContainer />
-      <div className="auth-card">
-        <h2>Welcome Back</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-field">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              className={errors.email ? "error" : ""}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-
-          <div className="form-field">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? "error" : ""}
-            />
-            {errors.password && (
-              <span className="error-text">{errors.password}</span>
-            )}
-          </div>
-
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
-          </button>
-        </form>
-
-        <p className="auth-link">
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        background: "#fff",
+      }}
+    >
+      <div
+        style={{
+          background: "#333",
+          minHeight: "60px",
+          display: "block",
+          visibility: "visible",
+        }}
+      >
+        <Navbar />
       </div>
+
+      <div className="auth-page" style={{ flex: 1, paddingTop: "20px" }}>
+        <ToastContainer />
+        <div className="auth-card">
+          <h2>Welcome Back</h2>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-field">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                className={errors.email ? "error" : ""}
+              />
+              {errors.email && (
+                <span className="error-text">{errors.email}</span>
+              )}
+            </div>
+
+            <div className="form-field">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? "error" : ""}
+              />
+              {errors.password && (
+                <span className="error-text">{errors.password}</span>
+              )}
+            </div>
+
+            <button type="submit" disabled={loading}>
+              {loading ? "Signing in..." : "Login"}
+            </button>
+          </form>
+
+          <p className="auth-link">
+            Don't have an account? <Link to="/register">Register here</Link>
+          </p>
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: "#333",
+          minHeight: "100px",
+          display: "block",
+          visibility: "visible",
+        }}
+      ></div>
+      <Footer />
     </div>
   );
 };

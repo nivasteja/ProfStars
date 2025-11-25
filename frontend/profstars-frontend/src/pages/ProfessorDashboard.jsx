@@ -17,6 +17,8 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+import ProfessorNavbar from "../components/ProfessorNavbar";
+import Footer from "../components/Footer";
 import "../styles/ProfessorDashboard.css";
 
 const ProfessorDashboard = () => {
@@ -44,8 +46,11 @@ const ProfessorDashboard = () => {
   const [reviewFilter, setReviewFilter] = useState("all");
   const [reviewSort, setReviewSort] = useState("newest");
   const [reviewSearch, setReviewSearch] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 10;
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const axiosConfig = {
@@ -88,7 +93,7 @@ const ProfessorDashboard = () => {
       toast.error("Failed to load profile");
       console.error(err);
     }
-  }, []);
+  }, [token]);
 
   const loadCountries = async () => {
     try {
@@ -126,7 +131,7 @@ const ProfessorDashboard = () => {
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [token]);
 
   const loadSubjects = useCallback(async () => {
     try {
@@ -138,7 +143,7 @@ const ProfessorDashboard = () => {
     } catch {
       toast.error("Failed to load subjects");
     }
-  }, []);
+  }, [token]);
 
   const loadAnalytics = useCallback(async () => {
     try {
@@ -174,19 +179,29 @@ const ProfessorDashboard = () => {
       console.error("Analytics error:", err);
       toast.error("Failed to load analytics");
     }
-  }, []);
+  }, [token]);
 
   const loadReviewStats = useCallback(async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/professor/review-stats",
+        "http://localhost:5000/api/professor/my-reviews",
         axiosConfig
       );
-      setReviewStats(res.data);
+
+      const allReviews = res.data || [];
+      const breakdown = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+      allReviews.forEach((review) => {
+        if (review.rating >= 1 && review.rating <= 5) {
+          breakdown[review.rating]++;
+        }
+      });
+
+      setReviewStats({ breakdown });
     } catch (err) {
       console.error("Review stats error:", err);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     loadProfile();
@@ -195,7 +210,7 @@ const ProfessorDashboard = () => {
     loadSubjects();
     loadAnalytics();
     loadReviewStats();
-  }, []);
+  }, [loadProfile, loadReviews, loadSubjects, loadAnalytics, loadReviewStats]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -235,11 +250,7 @@ const ProfessorDashboard = () => {
       toast.error("Failed to update profile");
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    toast.success("Logged out successfully");
-    navigate("/");
-  };
+
   const cancelEdit = () => {
     setEditData(profile);
     setIsEditing(false);
@@ -299,12 +310,28 @@ const ProfessorDashboard = () => {
     }
   };
 
+  // Get unique semesters and subjects from reviews
+  const uniqueSemesters = [
+    ...new Set(reviews.map((r) => r.semester).filter(Boolean)),
+  ];
+  const uniqueSubjectsFromReviews = [
+    ...new Set(reviews.map((r) => r.subject).filter(Boolean)),
+  ];
+
   // Filter and sort reviews
   const getFilteredReviews = () => {
     let filtered = [...reviews];
 
     if (reviewFilter !== "all") {
       filtered = filtered.filter((r) => r.rating === parseInt(reviewFilter));
+    }
+
+    if (semesterFilter) {
+      filtered = filtered.filter((r) => r.semester === semesterFilter);
+    }
+
+    if (subjectFilter) {
+      filtered = filtered.filter((r) => r.subject === subjectFilter);
     }
 
     if (reviewSearch) {
@@ -333,6 +360,26 @@ const ProfessorDashboard = () => {
     currentPage * reviewsPerPage
   );
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [reviewFilter, reviewSort, reviewSearch, semesterFilter, subjectFilter]);
+
+  const clearFilters = () => {
+    setReviewFilter("all");
+    setReviewSort("newest");
+    setReviewSearch("");
+    setSemesterFilter("");
+    setSubjectFilter("");
+  };
+
+  const hasActiveFilters =
+    reviewFilter !== "all" ||
+    reviewSort !== "newest" ||
+    reviewSearch ||
+    semesterFilter ||
+    subjectFilter;
+
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -349,20 +396,7 @@ const ProfessorDashboard = () => {
       <ToastContainer position="top-right" autoClose={2500} hideProgressBar />
 
       {/* Navigation */}
-      <nav className="nav-tabs">
-        {["profile", "reviews", "subjects", "analytics"].map((tab) => (
-          <button
-            key={tab}
-            className={`nav-tab ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-        <button className="nav-tab btn-logout" onClick={handleLogout}>
-          Logout
-        </button>
-      </nav>
+      <ProfessorNavbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <div className="content">
         {/* PROFILE TAB */}
@@ -637,10 +671,7 @@ const ProfessorDashboard = () => {
             <div className="review-filters">
               <select
                 value={reviewFilter}
-                onChange={(e) => {
-                  setReviewFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => setReviewFilter(e.target.value)}
                 className="filter-select"
               >
                 <option value="all">All Ratings</option>
@@ -662,16 +693,45 @@ const ProfessorDashboard = () => {
                 <option value="lowest">Lowest Rated</option>
               </select>
 
+              <select
+                value={semesterFilter}
+                onChange={(e) => setSemesterFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">All Semesters</option>
+                {uniqueSemesters.map((sem, idx) => (
+                  <option key={idx} value={sem}>
+                    {sem}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={subjectFilter}
+                onChange={(e) => setSubjectFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">All Subjects</option>
+                {uniqueSubjectsFromReviews.map((subj, idx) => (
+                  <option key={idx} value={subj}>
+                    {subj}
+                  </option>
+                ))}
+              </select>
+
               <input
                 type="text"
                 placeholder="Search reviews..."
                 value={reviewSearch}
-                onChange={(e) => {
-                  setReviewSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => setReviewSearch(e.target.value)}
                 className="search-input"
               />
+
+              {hasActiveFilters && (
+                <button className="btn-clear" onClick={clearFilters}>
+                  Clear Filters
+                </button>
+              )}
             </div>
 
             {/* Results info */}
@@ -681,33 +741,54 @@ const ProfessorDashboard = () => {
             </div>
 
             {paginatedReviews.length === 0 ? (
-              <p className="empty">
-                {reviewSearch || reviewFilter !== "all"
-                  ? "No reviews match your filters"
-                  : "No reviews yet"}
-              </p>
+              <div className="empty">
+                <p>
+                  {hasActiveFilters
+                    ? "No reviews match your filters"
+                    : "No reviews yet"}
+                </p>
+                {hasActiveFilters && (
+                  <button className="btn-secondary" onClick={clearFilters}>
+                    Clear Filters
+                  </button>
+                )}
+              </div>
             ) : (
               <>
                 <div className="reviews">
                   {paginatedReviews.map((r) => (
                     <div key={r._id} className="review">
                       <div className="review-top">
-                        <span className="reviewer">
-                          {r.studentId?.name || "Anonymous"}
-                        </span>
-                        <span className="stars">
-                          {"★".repeat(r.rating)}
-                          {"☆".repeat(5 - r.rating)}
+                        <div className="review-author">
+                          <span className="reviewer">
+                            {r.studentId?.name || "Anonymous"}
+                          </span>
+                          <span className="stars">
+                            {"★".repeat(r.rating)}
+                            {"☆".repeat(5 - r.rating)}
+                          </span>
+                        </div>
+                        <span className="review-date">
+                          {new Date(r.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
                         </span>
                       </div>
+
+                      {(r.semester || r.subject) && (
+                        <div className="review-meta">
+                          {r.semester && (
+                            <span className="meta-badge">📅 {r.semester}</span>
+                          )}
+                          {r.subject && (
+                            <span className="meta-badge">📚 {r.subject}</span>
+                          )}
+                        </div>
+                      )}
+
                       <p className="review-text">{r.comment}</p>
-                      <span className="review-date">
-                        {new Date(r.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </span>
                     </div>
                   ))}
                 </div>
@@ -926,7 +1007,7 @@ const ProfessorDashboard = () => {
                         {s.description || "No description"}
                       </p>
                       {s.semester && (
-                        <p className="subject-semester">{s.semester}</p>
+                        <p className="subject-semester">📅 {s.semester}</p>
                       )}
                     </div>
                     <div className="subject-actions">
@@ -1140,6 +1221,8 @@ const ProfessorDashboard = () => {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };

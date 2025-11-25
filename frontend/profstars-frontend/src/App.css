@@ -1,6 +1,7 @@
 /* ===========================================
    ProfStars – Clean Unified App Styling
    =========================================== */
+/* Add this to App.css */
 
 /* --------- Reset & Global Layout --------- */
 * {
@@ -191,13 +192,25 @@ tr:hover td {
   color: #777;
 }
 
-.mt-1 { margin-top: 10px; }
-.mt-2 { margin-top: 20px; }
-.mt-3 { margin-top: 30px; }
+.mt-1 {
+  margin-top: 10px;
+}
+.mt-2 {
+  margin-top: 20px;
+}
+.mt-3 {
+  margin-top: 30px;
+}
 
-.mb-1 { margin-bottom: 10px; }
-.mb-2 { margin-bottom: 20px; }
-.mb-3 { margin-bottom: 30px; }
+.mb-1 {
+  margin-bottom: 10px;
+}
+.mb-2 {
+  margin-bottom: 20px;
+}
+.mb-3 {
+  margin-bottom: 30px;
+}
 
 .flex {
   display: flex;
@@ -230,4 +243,3 @@ tr:hover td {
     padding: 15px 20px;
   }
 }
-

@@ -19,6 +19,9 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+    semester: { type: String, required: true },
+    subject: { type: String, required: true },
+
     comment: {
       type: String,
       trim: true,

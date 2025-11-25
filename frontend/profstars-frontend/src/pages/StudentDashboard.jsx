@@ -1,76 +1,87 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import "../styles/StudentDashboard.css";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import StudentNavbar from "../components/StudentNavbar";
+import Footer from "../components/Footer";
+import "../styles/StudentDashboard.css";
 
 const StudentDashboard = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [professors, setProfessors] = useState([]);
   const [countries, setCountries] = useState([]);
   const [universities, setUniversities] = useState([]);
-  const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
+
+  // Filters
   const [search, setSearch] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterUniversity, setFilterUniversity] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [selectedProfessor, setSelectedProfessor] = useState(null);
-  const [review, setReview] = useState({ rating: 0, comment: "" });
-  const [reviewErrors, setReviewErrors] = useState({});
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const professorsPerPage = 12;
+
+  // Add Professor Form - REMOVED BIO
+  const [newProfessor, setNewProfessor] = useState({
+    name: "",
+    department: "",
+    university: "",
+    country: "",
+    academicTitle: "",
+  });
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // Fetch countries on component mount
+  // Listen for tab switch events from ProfessorDetails
+  useEffect(() => {
+    const handleTabSwitch = (e) => {
+      setActiveTab(e.detail);
+    };
+    window.addEventListener("switchTab", handleTabSwitch);
+    return () => window.removeEventListener("switchTab", handleTabSwitch);
+  }, []);
+
+  // Fetch countries
   useEffect(() => {
     const fetchCountries = async () => {
-      setLoadingCountries(true);
       try {
         const res = await axios.get(
           "http://localhost:5000/api/universities/countries"
         );
         setCountries(res.data);
-        setLoadingCountries(false);
       } catch (err) {
         console.error("Error loading countries:", err);
-        setLoadingCountries(false);
       }
     };
-
     fetchCountries();
   }, []);
 
-  // Fetch universities when country filter changes
+  // Fetch universities by country
   useEffect(() => {
-    if (filterCountry) {
-      setLoadingUniversities(true);
+    if (!filterCountry && !newProfessor.country) {
       setUniversities([]);
-      setFilterUniversity("");
-
-      axios
-        .get(
-          `http://localhost:5000/api/universities/${encodeURIComponent(
-            filterCountry
-          )}`
-        )
-        .then((res) => {
-          if (res.data && res.data.length > 0) {
-            setUniversities(res.data);
-          } else {
-            setUniversities([]);
-          }
-          setLoadingUniversities(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching universities:", err);
-          setUniversities([]);
-          setLoadingUniversities(false);
-        });
-    } else {
-      setUniversities([]);
-      setFilterUniversity("");
+      return;
     }
-  }, [filterCountry]);
+
+    const country =
+      activeTab === "add-professor" ? newProfessor.country : filterCountry;
+    if (!country) return;
+
+    setLoadingUniversities(true);
+    axios
+      .get(
+        `http://localhost:5000/api/universities/${encodeURIComponent(country)}`
+      )
+      .then((res) => setUniversities(res.data || []))
+      .catch((err) => {
+        console.error("Error fetching universities:", err);
+        setUniversities([]);
+      })
+      .finally(() => setLoadingUniversities(false));
+  }, [filterCountry, newProfessor.country, activeTab]);
 
   // Fetch professors
   const fetchProfessors = useCallback(async () => {
@@ -88,272 +99,365 @@ const StudentDashboard = () => {
   }, [token, search]);
 
   useEffect(() => {
-    fetchProfessors();
-  }, [fetchProfessors]);
-
-  // Validate review form
-  const validateReview = () => {
-    const errors = {};
-
-    if (!review.rating || review.rating < 1 || review.rating > 5) {
-      errors.rating = "Please select a rating between 1 and 5";
+    if (activeTab === "dashboard") {
+      fetchProfessors();
     }
+  }, [fetchProfessors, activeTab]);
 
-    if (!review.comment.trim()) {
-      errors.comment = "Please write a comment";
-    } else if (review.comment.trim().length < 10) {
-      errors.comment = "Comment must be at least 10 characters";
-    } else if (review.comment.trim().length > 500) {
-      errors.comment = "Comment must not exceed 500 characters";
-    }
+  // Filter professors
+  const filteredProfessors = professors.filter((p) => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCountry =
+      !filterCountry ||
+      p.country?.toLowerCase().includes(filterCountry.toLowerCase());
+    const matchesUniversity =
+      !filterUniversity ||
+      p.university?.toLowerCase().includes(filterUniversity.toLowerCase());
+    return matchesSearch && matchesCountry && matchesUniversity;
+  });
 
-    setReviewErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // Pagination
+  const totalPages = Math.ceil(filteredProfessors.length / professorsPerPage);
+  const paginatedProfessors = filteredProfessors.slice(
+    (currentPage - 1) * professorsPerPage,
+    currentPage * professorsPerPage
+  );
 
-  // Handle review submission
-  const handleReviewSubmit = async (e) => {
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterCountry, filterUniversity]);
+
+  // Handle Add Professor - REMOVED BIO
+  const handleAddProfessor = async (e) => {
     e.preventDefault();
 
-    if (!validateReview()) {
-      toast.error("Please fix the errors in your review");
+    if (
+      !newProfessor.name ||
+      !newProfessor.department ||
+      !newProfessor.university ||
+      !newProfessor.country
+    ) {
+      toast.error("Please fill all required fields");
       return;
     }
 
     try {
       await axios.post(
-        `http://localhost:5000/api/reviews/${selectedProfessor._id}`,
-        review,
+        "http://localhost:5000/api/review/add-professor",
+        newProfessor,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setShowModal(false);
-      setReview({ rating: 0, comment: "" });
-      setReviewErrors({});
-      fetchProfessors();
-      toast.success("Review submitted successfully!");
+
+      toast.success("Professor submitted for admin approval!");
+      setNewProfessor({
+        name: "",
+        department: "",
+        university: "",
+        country: "",
+        academicTitle: "",
+      });
+      setActiveTab("dashboard");
     } catch (err) {
-      console.error("Error submitting review:", err);
-      toast.error(
-        err.response?.data?.message ||
-          "Failed to submit review. Please try again."
-      );
+      console.error("Error submitting professor:", err);
+      toast.error(err.response?.data?.message || "Failed to submit professor.");
     }
   };
 
-  // Handle review field changes
-  const handleReviewChange = (field, value) => {
-    setReview({ ...review, [field]: value });
-    // Clear error for this field
-    if (reviewErrors[field]) {
-      setReviewErrors({ ...reviewErrors, [field]: "" });
-    }
+  const clearFilters = () => {
+    setSearch("");
+    setFilterCountry("");
+    setFilterUniversity("");
   };
-
-  // Filter professors by search, university, country
-  const filteredProfessors = professors.filter((p) => {
-    return (
-      p.name.toLowerCase().includes(search.toLowerCase()) &&
-      (!filterCountry ||
-        (p.country &&
-          p.country.toLowerCase().includes(filterCountry.toLowerCase()))) &&
-      (!filterUniversity ||
-        (p.university &&
-          p.university.toLowerCase().includes(filterUniversity.toLowerCase())))
-    );
-  });
 
   return (
     <div className="student-dashboard">
-      <h1>🎓 Explore Professors</h1>
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar />
 
-      {/* Filters Section */}
-      <div className="filters-grid">
-        <input
-          type="text"
-          placeholder="Search by professor name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
+      <StudentNavbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <select
-          value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
-          disabled={loadingCountries}
-          className="filter-select"
-        >
-          <option value="">
-            {loadingCountries ? "Loading Countries..." : "All Countries"}
-          </option>
-          {countries.map((country) => (
-            <option key={country} value={country}>
-              {country}
-            </option>
-          ))}
-        </select>
+      <div className="content">
+        {/* DASHBOARD TAB */}
+        {activeTab === "dashboard" && (
+          <div className="section">
+            <div className="section-header">
+              <h1>Explore Professors</h1>
+            </div>
 
-        <select
-          value={filterUniversity}
-          onChange={(e) => setFilterUniversity(e.target.value)}
-          disabled={!filterCountry || loadingUniversities}
-          className="filter-select"
-        >
-          <option value="">
-            {!filterCountry
-              ? "Select Country First"
-              : loadingUniversities
-              ? "Loading Universities..."
-              : "All Universities"}
-          </option>
-          {universities.map((uni, index) => (
-            <option key={`${uni.name}-${index}`} value={uni.name}>
-              {uni.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Clear Filters Button */}
-        {(search || filterCountry || filterUniversity) && (
-          <button
-            className="clear-filters-btn"
-            onClick={() => {
-              setSearch("");
-              setFilterCountry("");
-              setFilterUniversity("");
-            }}
-          >
-            Clear Filters
-          </button>
-        )}
-      </div>
-
-      {/* Professor Cards */}
-      <div className="professor-grid">
-        {filteredProfessors.length === 0 ? (
-          <div className="no-results">
-            <p>No professors found matching your criteria.</p>
-            {(search || filterCountry || filterUniversity) && (
-              <button
-                className="clear-filters-btn"
-                onClick={() => {
-                  setSearch("");
-                  setFilterCountry("");
+            {/* Filters */}
+            <div className="filters-section">
+              <input
+                type="text"
+                placeholder="Search by professor name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="search-input"
+              />
+              <select
+                value={filterCountry}
+                onChange={(e) => {
+                  setFilterCountry(e.target.value);
                   setFilterUniversity("");
                 }}
+                className="filter-select"
               >
-                Clear Filters
-              </button>
-            )}
-          </div>
-        ) : (
-          filteredProfessors.map((prof) => (
-            <div key={prof._id} className="professor-card">
-              <h2>{prof.name}</h2>
-              <p>
-                <strong>University:</strong> {prof.university || "N/A"}
-              </p>
-              <p>
-                <strong>Department:</strong> {prof.department || "N/A"}
-              </p>
-              <p>
-                <strong>Country:</strong> {prof.country || "N/A"}
-              </p>
-              <p>
-                ⭐{" "}
-                {prof.averageRating
-                  ? prof.averageRating.toFixed(1)
-                  : "No Ratings"}
-              </p>
-
-              <div className="card-buttons">
-                <button
-                  className="review-btn"
-                  onClick={() => {
-                    setSelectedProfessor(prof);
-                    setShowModal(true);
-                    setReview({ rating: 0, comment: "" });
-                    setReviewErrors({});
-                  }}
-                >
-                  Add Review
+                <option value="">All Countries</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={filterUniversity}
+                onChange={(e) => setFilterUniversity(e.target.value)}
+                disabled={!filterCountry || loadingUniversities}
+                className="filter-select"
+              >
+                <option value="">
+                  {!filterCountry
+                    ? "Select Country First"
+                    : loadingUniversities
+                    ? "Loading..."
+                    : "All Universities"}
+                </option>
+                {universities.map((uni, idx) => (
+                  <option key={`${uni.name}-${idx}`} value={uni.name}>
+                    {uni.name}
+                  </option>
+                ))}
+              </select>
+              {(search || filterCountry || filterUniversity) && (
+                <button className="btn-clear" onClick={clearFilters}>
+                  Clear Filters
                 </button>
-                <button
-                  className="view-btn"
-                  onClick={() => navigate(`/professor/${prof._id}`)}
-                >
-                  View Details
-                </button>
-              </div>
+              )}
             </div>
-          ))
-        )}
-      </div>
 
-      {/* Review Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Add Review for {selectedProfessor.name}</h2>
-            <form onSubmit={handleReviewSubmit}>
-              <div className="form-field">
-                <label>Rating (1–5) *</label>
-                <div className="rating-input">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      className={`star ${
-                        review.rating >= star ? "active" : ""
-                      }`}
-                      onClick={() => handleReviewChange("rating", star)}
-                    >
-                      ⭐
-                    </span>
+            {/* Results Info */}
+            <div className="results-info">
+              Showing {paginatedProfessors.length} of{" "}
+              {filteredProfessors.length} professors
+            </div>
+
+            {/* Professors Grid */}
+            {paginatedProfessors.length === 0 ? (
+              <div className="empty">
+                <p>No professors found matching your criteria.</p>
+                {(search || filterCountry || filterUniversity) && (
+                  <button className="btn-secondary" onClick={clearFilters}>
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="professors-grid">
+                  {paginatedProfessors.map((prof) => (
+                    <div key={prof._id} className="professor-card">
+                      <div className="card-header">
+                        <h3>{prof.name}</h3>
+                        <div className="rating">
+                          ⭐{" "}
+                          {prof.averageRating
+                            ? prof.averageRating.toFixed(1)
+                            : "N/A"}
+                        </div>
+                      </div>
+
+                      <div className="card-body">
+                        <div className="info-row">
+                          <span className="label">University:</span>
+                          <span className="value">
+                            {prof.university || "N/A"}
+                          </span>
+                        </div>
+                        <div className="info-row">
+                          <span className="label">Department:</span>
+                          <span className="value">
+                            {prof.department || "N/A"}
+                          </span>
+                        </div>
+                        <div className="info-row">
+                          <span className="label">Country:</span>
+                          <span className="value">{prof.country || "N/A"}</span>
+                        </div>
+                        {prof.academicTitle && (
+                          <div className="info-row">
+                            <span className="label">Title:</span>
+                            <span className="value">{prof.academicTitle}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="card-actions">
+                        <button
+                          className="btn-view"
+                          onClick={() => navigate(`/professor/${prof._id}`)}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
-                {reviewErrors.rating && (
-                  <span className="error-text">{reviewErrors.rating}</span>
-                )}
-              </div>
 
-              <div className="form-field">
-                <label>Comment (10-500 characters) *</label>
-                <textarea
-                  value={review.comment}
-                  onChange={(e) =>
-                    handleReviewChange("comment", e.target.value)
-                  }
-                  placeholder="Share your experience with this professor..."
-                  rows="5"
-                  className={reviewErrors.comment ? "error" : ""}
-                />
-                <div className="char-count">
-                  {review.comment.length}/500 characters
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="pagination-btn"
+                    >
+                      Previous
+                    </button>
+
+                    <span className="pagination-info">
+                      Page {currentPage} of {totalPages}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="pagination-btn"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ADD PROFESSOR TAB - REMOVED BIO */}
+        {activeTab === "add-professor" && (
+          <div className="section">
+            <div className="section-header">
+              <h1>Add New Professor</h1>
+            </div>
+
+            <div className="add-professor-info">
+              <p>
+                Submit a professor for admin approval. Once approved, they will
+                appear in the directory.
+              </p>
+            </div>
+
+            <form onSubmit={handleAddProfessor} className="add-professor-form">
+              <div className="form-grid">
+                <div className="form-field">
+                  <label>Professor Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Dr. John Smith"
+                    value={newProfessor.name}
+                    onChange={(e) =>
+                      setNewProfessor({ ...newProfessor, name: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                {reviewErrors.comment && (
-                  <span className="error-text">{reviewErrors.comment}</span>
-                )}
+
+                <div className="form-field">
+                  <label>Academic Title</label>
+                  <input
+                    type="text"
+                    placeholder="Assistant Professor, PhD"
+                    value={newProfessor.academicTitle}
+                    onChange={(e) =>
+                      setNewProfessor({
+                        ...newProfessor,
+                        academicTitle: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Country *</label>
+                  <select
+                    value={newProfessor.country}
+                    onChange={(e) =>
+                      setNewProfessor({
+                        ...newProfessor,
+                        country: e.target.value,
+                        university: "",
+                      })
+                    }
+                    required
+                  >
+                    <option value="">Select Country</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label>University *</label>
+                  <select
+                    value={newProfessor.university}
+                    onChange={(e) =>
+                      setNewProfessor({
+                        ...newProfessor,
+                        university: e.target.value,
+                      })
+                    }
+                    disabled={!newProfessor.country || loadingUniversities}
+                    required
+                  >
+                    <option value="">
+                      {loadingUniversities ? "Loading..." : "Select University"}
+                    </option>
+                    {universities.map((uni, idx) => (
+                      <option key={idx} value={uni.name}>
+                        {uni.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label>Department *</label>
+                  <input
+                    type="text"
+                    placeholder="Computer Science"
+                    value={newProfessor.department}
+                    onChange={(e) =>
+                      setNewProfessor({
+                        ...newProfessor,
+                        department: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="modal-buttons">
-                <button type="submit" className="submit-btn">
-                  Submit Review
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  Submit for Approval
                 </button>
                 <button
                   type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setShowModal(false);
-                    setReview({ rating: 0, comment: "" });
-                    setReviewErrors({});
-                  }}
+                  className="btn-secondary"
+                  onClick={() => setActiveTab("dashboard")}
                 >
                   Cancel
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+    
     </div>
   );
 };

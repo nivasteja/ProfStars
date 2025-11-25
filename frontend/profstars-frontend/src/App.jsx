@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+import UniversityDetails from "./pages/UniversityDetails";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Register from "./pages/Register";
@@ -21,6 +22,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminOverview from "./pages/AdminOverview";
 import AdminLayout from "./layouts/AdminLayout";
+
+import Footer from "./components/Footer";
 import "./App.css";
 
 function App() {
@@ -37,6 +40,7 @@ function App() {
 
     checkAuth();
     window.addEventListener("storage", checkAuth);
+
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
@@ -46,35 +50,38 @@ function App() {
     setRole(null);
   };
 
-  // --- THIS IS THE FIX ---
   const location = useLocation();
   const path = location.pathname;
 
-  // Hide on all admin routes
   const isAdminRoute = path.startsWith("/admin");
-  // Hide ONLY on the main professor dashboard (path is exactly "/professor")
   const isProfessorDashboard = path === "/professor";
+  const isStudentDashboard = path === "/dashboard";
+  const isProfessorDetailsPage = path.startsWith("/professor/");
 
-  const showNavbar = !isAdminRoute && !isProfessorDashboard;
-  // --- END OF FIX ---
+  const showNavbar =
+    !isAdminRoute &&
+    !isProfessorDashboard &&
+    !isStudentDashboard &&
+    !isProfessorDetailsPage;
+
+  const showFooter =
+    !isAdminRoute &&
+    !isProfessorDashboard &&
+    !isStudentDashboard &&
+    !isProfessorDetailsPage;
 
   return (
     <>
       {showNavbar && <Navbar isAuth={isAuth} onLogout={handleLogout} />}
 
       <Routes>
-        {/* All your <Route> components go here... */}
-        {/* ...they are all correct, no changes needed to them. */}
-
-        {/* ---------- PUBLIC ROUTES ---------- */}
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
-
-        {/* ---------- LOGIN / REGISTER always accessible ---------- */}
+        {/* LOGIN + REGISTER */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* ---------- AUTH-PROTECTED ROUTES ---------- */}
+        {/* STUDENT */}
         <Route
           path="/dashboard"
           element={
@@ -85,7 +92,14 @@ function App() {
             )
           }
         />
-
+        <Route path="/" element={<Home />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route
+          path="/university-details"
+          element={<UniversityDetails />}
+        />{" "}
+        {/* NEW */}
+        {/* PROFESSOR */}
         <Route
           path="/professor"
           element={
@@ -96,15 +110,13 @@ function App() {
             )
           }
         />
-
         <Route
           path="/professor/:id"
           element={
             isAuth ? <ProfessorDetails /> : <Navigate to="/login" replace />
           }
         />
-
-        {/* ---------- ADMIN ROUTES ---------- */}
+        {/* ADMIN */}
         <Route
           path="/admin-login"
           element={
@@ -115,7 +127,6 @@ function App() {
             )
           }
         />
-
         <Route
           path="/admin"
           element={
@@ -130,8 +141,7 @@ function App() {
           <Route path="approvals" element={<AdminDashboard />} />
           <Route path="analytics" element={<AdminAnalytics />} />
         </Route>
-
-        {/* ---------- 404 PAGE ---------- */}
+        {/* 404 */}
         <Route
           path="*"
           element={
@@ -141,9 +151,13 @@ function App() {
           }
         />
       </Routes>
+
+      {/* ⭐ FULL-WIDTH FOOTER (ONLY ON PUBLIC PAGES) ⭐ */}
+      {showFooter && <Footer />}
     </>
   );
 }
+
 export default function AppWrapper() {
   return (
     <Router>

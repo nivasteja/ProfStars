@@ -1,7 +1,8 @@
+// src/pages/Home.jsx
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify"; // Ensure react-toastify is installed
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import API from "../api";
 import "../styles/Home.css";
 
 const Home = () => {
@@ -12,26 +13,24 @@ const Home = () => {
   const [universities, setUniversities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [universityModal, setUniversityModal] = useState(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const universitiesPerPage = 12;
+  const UNIVERSITIES_PER_PAGE = 12;
 
   // Professor state
   const [recentProfessors, setRecentProfessors] = useState([]);
   const [professorSearch, setProfessorSearch] = useState("");
   const [loadingProfessors, setLoadingProfessors] = useState(true);
 
-  // Fetch countries
+  /* ------------ FETCH COUNTRIES ------------ */
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/universities/countries"
-        );
-        setCountries(res.data);
+        const res = await API.get("/universities/countries");
+        setCountries(res.data || []);
       } catch (err) {
         console.error("Error loading countries:", err);
       }
@@ -39,14 +38,13 @@ const Home = () => {
     fetchCountries();
   }, []);
 
-  // Fetch recent professors
+  /* ------------ FETCH RECENT PROFESSORS ------------ */
   useEffect(() => {
     const fetchRecentProfessors = async () => {
       setLoadingProfessors(true);
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/professor/recent"
-        );
+        // FIXED: endpoint aligned with Explore (/professor/recent)
+        const res = await API.get("/professor/recent");
         setRecentProfessors(res.data || []);
       } catch (err) {
         console.error("Error loading recent professors:", err);
@@ -58,89 +56,84 @@ const Home = () => {
     fetchRecentProfessors();
   }, []);
 
-  // Fetch universities when country changes
+  /* ------------ FETCH UNIVERSITIES BY COUNTRY ------------ */
   useEffect(() => {
-    if (selectedCountry) {
-      setLoading(true);
-      setCurrentPage(1);
-      axios
-        .get(
-          `http://localhost:5000/api/universities/${encodeURIComponent(
-            selectedCountry
-          )}`
-        )
-        .then((res) => {
-          setUniversities(res.data || []);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching universities:", err);
-          setUniversities([]);
-          setLoading(false);
-        });
-    } else {
+    if (!selectedCountry) {
       setUniversities([]);
+      return;
     }
+
+    const fetchUniversities = async () => {
+      try {
+        setLoadingUniversities(true);
+        setCurrentPage(1);
+        const res = await API.get(
+          `/universities/${encodeURIComponent(selectedCountry)}`
+        );
+        setUniversities(res.data || []);
+      } catch (err) {
+        console.error("Error fetching universities:", err);
+        setUniversities([]);
+      } finally {
+        setLoadingUniversities(false);
+      }
+    };
+
+    fetchUniversities();
   }, [selectedCountry]);
 
-  // Filter universities
+  /* ------------ FILTER / PAGINATE UNIVERSITIES ------------ */
   const filteredUniversities = universities.filter((uni) =>
-    uni.name.toLowerCase().includes(searchQuery.toLowerCase())
+    uni.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Pagination logic
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredUniversities.length / universitiesPerPage)
+    Math.ceil(filteredUniversities.length / UNIVERSITIES_PER_PAGE)
   );
+
   const paginatedUniversities = filteredUniversities.slice(
-    (currentPage - 1) * universitiesPerPage,
-    currentPage * universitiesPerPage
+    (currentPage - 1) * UNIVERSITIES_PER_PAGE,
+    currentPage * UNIVERSITIES_PER_PAGE
   );
 
-  // Filter professors by name
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  /* ------------ FILTER PROFESSORS ------------ */
   const filteredProfessors = recentProfessors.filter((prof) =>
-    prof.name.toLowerCase().includes(professorSearch.toLowerCase())
+    prof.name?.toLowerCase().includes(professorSearch.toLowerCase())
   );
 
+  /* ------------ HANDLERS ------------ */
   const handleProfessorClick = (profId) => {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.info("Please log in to view professor details.", {
         position: "top-center",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
       });
       return;
     }
     navigate(`/professor/${profId}`);
   };
 
-  const openUniversityModal = (uni) => {
-    setUniversityModal(uni);
-  };
+  const openUniversityModal = (uni) => setUniversityModal(uni);
+  const closeUniversityModal = () => setUniversityModal(null);
 
-  const closeUniversityModal = () => {
-    setUniversityModal(null);
-  };
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
+  /* ------------ RENDER ------------ */
   return (
     <div className="home-container">
-      {/* Hero Section */}
+      {/* HERO */}
       <section className="hero-section">
-        <div className="hero-overlay"></div>
-        <div className="floating-glow"></div>
-        <div className="floating-orb orb1"></div>
-        <div className="floating-orb orb2"></div>
+        <div className="hero-overlay" />
+        <div className="floating-glow" />
+        <div className="floating-orb orb1" />
+        <div className="floating-orb orb2" />
 
         <div className="hero-content">
           <h1 className="hero-title">Discover. Review. Connect.</h1>
@@ -153,21 +146,42 @@ const Home = () => {
             and share your story.
           </p>
 
+          <div className="hero-cta-row">
+            <button
+              className="hero-btn primary"
+              onClick={() => navigate("/explore")}
+            >
+              Explore Professors & Universities
+            </button>
+            <button
+              className="hero-btn ghost"
+              onClick={() => navigate("/register")}
+            >
+              Join as a Student
+            </button>
+          </div>
+
+          <div className="hero-trust-row">
+            <span className="trust-dot" />
+            <p>Built by students for students — global, transparent, fair.</p>
+          </div>
+
           <div className="scroll-indicator">
             <span className="scroll-icon">⬇️</span>
-            <p>Explore Universities</p>
+            <p>Scroll to explore universities</p>
           </div>
         </div>
       </section>
 
-      {/* University Search Section */}
+      {/* UNIVERSITIES SECTION */}
       <section className="section section-light">
         <div className="section-content">
           <h2 className="section-title">Explore Universities Worldwide</h2>
           <p className="section-subtitle">
-            Search from thousands of universities across the globe
+            Search from thousands of universities across the globe.
           </p>
 
+          {/* Compact search bar */}
           <div className="search-box">
             <div className="search-row">
               <select
@@ -200,53 +214,56 @@ const Home = () => {
             </div>
           </div>
 
-          {loading ? (
+          {/* Universities content */}
+          {loadingUniversities ? (
             <p className="loading">Loading universities...</p>
-          ) : selectedCountry &&
-            !loading &&
-            paginatedUniversities.length === 0 ? (
+          ) : selectedCountry && paginatedUniversities.length === 0 ? (
             <p className="no-results">No universities found.</p>
           ) : (
             <>
               <div className="university-grid">
                 {paginatedUniversities.map((uni, idx) => (
                   <div
-                    key={idx}
+                    key={`${uni.name}-${idx}`}
                     className="university-card"
                     onClick={() => openUniversityModal(uni)}
                   >
                     <div className="uni-icon">🎓</div>
                     <h3 className="uni-name">{uni.name}</h3>
-                    <p className="uni-country">{selectedCountry}</p>
+                    <p className="uni-country">
+                      {uni.country || selectedCountry}
+                    </p>
                   </div>
                 ))}
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="pagination">
+              {/* Pagination (scoped classes to avoid conflict with Explore) */}
+              {selectedCountry && totalPages > 1 && (
+                <div className="home-pagination">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="pagination-btn"
+                    className="home-pagination-btn"
                   >
                     &larr;
                   </button>
-                  {[...Array(totalPages)].map((_, i) => (
+
+                  {Array.from({ length: totalPages }).map((_, i) => (
                     <button
                       key={i + 1}
                       onClick={() => handlePageChange(i + 1)}
-                      className={`pagination-btn ${
+                      className={`home-pagination-btn ${
                         currentPage === i + 1 ? "active" : ""
                       }`}
                     >
                       {i + 1}
                     </button>
                   ))}
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="pagination-btn"
+                    className="home-pagination-btn"
                   >
                     &rarr;
                   </button>
@@ -257,12 +274,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Recently Added Professors */}
+      {/* RECENT PROFESSORS */}
       <section className="section section-dark">
         <div className="section-content">
           <h2 className="section-title">Recently Added Professors</h2>
           <p className="section-subtitle">
-            Meet the newest members of our academic community
+            Meet the newest voices in our academic community.
           </p>
 
           <div className="professor-search-box">
@@ -281,20 +298,22 @@ const Home = () => {
             <p className="no-results">No professors match your search.</p>
           ) : (
             <div className="professor-grid">
-              {filteredProfessors.slice(0, 5).map((prof) => (
+              {filteredProfessors.slice(0, 6).map((prof) => (
                 <div
                   key={prof._id}
                   className="professor-card"
                   onClick={() => handleProfessorClick(prof._id)}
                 >
                   <div className="prof-avatar">
-                    {prof.name.charAt(0).toUpperCase()}
+                    {prof.name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="prof-info">
                     <h3 className="prof-name">{prof.name}</h3>
                     <p className="prof-detail">{prof.university || "N/A"}</p>
                     <p className="prof-detail">{prof.department || "N/A"}</p>
-                    <p className="prof-detail">📍 {prof.country || "N/A"}</p>
+                    <p className="prof-detail">
+                      📍 {prof.country || "Not specified"}
+                    </p>
                     <div className="prof-rating">
                       ⭐{" "}
                       {prof.averageRating
@@ -309,79 +328,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* WHY PROFSTARS / VALUES */}
       <section className="section section-light">
         <div className="section-content">
           <h2 className="section-title">Why ProfStars?</h2>
+          <p className="section-subtitle">
+            Designed for transparency, built for student success.
+          </p>
+
           <div className="values-grid">
             <div className="value-card">
               <div className="value-icon">🌍</div>
               <h3 className="value-title">Global Network</h3>
               <p className="value-desc">
-                Access professor reviews from universities across the world
+                Access professor reviews from universities all around the world.
               </p>
             </div>
             <div className="value-card">
               <div className="value-icon">⭐</div>
               <h3 className="value-title">Honest Reviews</h3>
               <p className="value-desc">
-                Share and read authentic student experiences and ratings
+                Read authentic student voices — no sugarcoating, no noise.
               </p>
             </div>
             <div className="value-card">
               <div className="value-icon">🎯</div>
-              <h3 className="value-title">Make Informed Choices</h3>
+              <h3 className="value-title">Smarter Decisions</h3>
               <p className="value-desc">
-                Find the right professors for your academic journey
+                Choose professors who match your goals, learning style, and
+                ambitions.
               </p>
             </div>
             <div className="value-card">
               <div className="value-icon">🤝</div>
               <h3 className="value-title">Community Driven</h3>
               <p className="value-desc">
-                Built by students, for students, supporting academic excellence
+                Built by students, for students — constantly evolving with your
+                feedback.
               </p>
             </div>
             <div className="value-card">
               <div className="value-icon">🤖</div>
-              <h4 className="value-title">AI Insights</h4>
+              <h3 className="value-title">AI Insights</h3>
               <p className="value-desc">
-                Get AI-powered analysis of professor ratings and trends for
-                smarter decisions.
+                Get AI-powered trends and patterns to quickly understand
+                professor performance.
               </p>
             </div>
-
             <div className="value-card">
               <div className="value-icon">✅</div>
-              <h4 className="value-title">Verified Data</h4>
+              <h3 className="value-title">Verified Data</h3>
               <p className="value-desc">
-                All reviews are verified for authenticity to ensure reliability
-                and trust.
+                Reviews are checked for authenticity to keep the platform fair
+                and trustworthy.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
-        <p>© {new Date().getFullYear()} ProfStars | All Rights Reserved</p>
-        <p className="footer-links">
-          <a href="#" className="footer-link">
-            Terms
-          </a>{" "}
-          |
-          <a href="#" className="footer-link">
-            Privacy
-          </a>{" "}
-          |
-          <a href="#" className="footer-link">
-            Contact
-          </a>
-        </p>
-      </footer>
-
-      {/* University Modal */}
+      {/* UNIVERSITY MODAL (uses global modal styles from Footer.css) */}
       {universityModal && (
         <div className="modal-overlay" onClick={closeUniversityModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -399,7 +405,7 @@ const Home = () => {
                 {universityModal["state-province"]}
               </p>
             )}
-            {universityModal.web_pages && universityModal.web_pages[0] && (
+            {universityModal.web_pages?.[0] && (
               <p>
                 <strong>Website:</strong>{" "}
                 <a

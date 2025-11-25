@@ -1,0 +1,96 @@
+.report-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+}
+
+.report-modal {
+  background: #ffffff;
+  width: 90%;
+  max-width: 540px;
+  padding: 28px 32px;
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.report-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #eee;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.report-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.report-sub {
+  color: #6a0dad;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.report-label {
+  margin-top: 10px;
+  font-weight: 600;
+  color: #444;
+}
+
+.report-select,
+.report-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.report-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.report-submit {
+  background: linear-gradient(135deg, #6a0dad, #8b5cf6);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  width: 100%;
+  border-radius: 8px;
+  font-weight: 700;
+  margin-top: 18px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.report-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(106, 13, 173, 0.25);
+}

@@ -1,16 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 import logo from "../assets/logo.svg";
 
-const Navbar = () => {
+const StudentNavbar = ({ activeTab, setActiveTab }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Close mobile menu when navigating
   useEffect(() => {
     setMenuOpen(false);
   }, [location]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    navigate("/");
+  };
 
   return (
     <nav className="navbar">
@@ -23,36 +31,23 @@ const Navbar = () => {
 
         {/* Links */}
         <div className={`navbar-links ${menuOpen ? "open" : ""}`}>
-          <Link
-            to="/"
-            className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
+          <button
+            className={`nav-link ${activeTab === "dashboard" ? "active" : ""}`}
+            onClick={() => setActiveTab("dashboard")}
           >
-            Home
-          </Link>
-          <Link
-            to="/explore"
+            Dashboard
+          </button>
+          <button
             className={`nav-link ${
-              location.pathname === "/explore" ? "active" : ""
+              activeTab === "add-professor" ? "active" : ""
             }`}
+            onClick={() => setActiveTab("add-professor")}
           >
-            Explore
-          </Link>
-          <Link
-            to="/login"
-            className={`nav-link ${
-              location.pathname === "/login" ? "active" : ""
-            }`}
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className={`nav-link btn-cta ${
-              location.pathname === "/register" ? "active-btn" : ""
-            }`}
-          >
-            Get Started
-          </Link>
+            Add Professor
+          </button>
+          <button className="nav-link btn-cta" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
 
         {/* Hamburger Menu for Mobile */}
@@ -69,4 +64,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default StudentNavbar;

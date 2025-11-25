@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
+import "../components/Footer.jsx";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ const Dashboard = () => {
           </main>
         </div>
       )}
+      <footer></footer>
     </div>
   );
 };

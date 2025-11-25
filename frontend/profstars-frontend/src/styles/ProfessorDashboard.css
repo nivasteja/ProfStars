@@ -381,19 +381,22 @@
   margin: 0;
 }
 
-/* Social Links */
+/* Social Links - FIXED */
 .social-links {
+  display: flex; /* Changed from default to flex */
+  align-items: center; /* Vertically centers label with buttons */
+  gap: 24px; /* Space between label and first button */
   margin-top: 32px;
 }
 
 .social-links label {
-  display: block;
+  margin-bottom: 0; /* Remove the margin that was pushing buttons down */
   font-size: 11px;
   font-weight: 600;
   color: #6b7280;
-  margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  white-space: nowrap; /* Prevents label from wrapping */
 }
 
 .social-buttons {
@@ -561,9 +564,10 @@
 /* Reviews */
 .review-filters {
   display: grid;
-  grid-template-columns: 200px 200px 1fr;
+  grid-template-columns: repeat(4, 1fr) minmax(200px, 2fr) auto;
   gap: 12px;
   margin-bottom: 20px;
+  align-items: center;
 }
 
 .filter-select,
@@ -643,7 +647,7 @@
   color: #9ca3af;
   font-weight: 500;
   display: inline-block;
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 /* Pagination */
@@ -698,8 +702,8 @@
 
 .subject-form-grid {
   display: grid;
-  grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr auto;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
   align-items: end;
 }
 
@@ -737,8 +741,7 @@
 
 .form-actions-inline {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  justify-content: flex-end;
 }
 
 .form-actions-inline .btn-primary {
@@ -881,7 +884,11 @@
   text-align: center;
   color: #9ca3af;
   font-size: 15px;
-  padding: 48px;
+  padding: 64px 24px;
+  background: #f9fafb;
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  margin-top: 20px;
 }
 
 /* Responsive */

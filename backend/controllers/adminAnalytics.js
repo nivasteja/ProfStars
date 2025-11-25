@@ -3,16 +3,17 @@ import Professor from "../models/Professor.js";
 import User from "../models/User.js";
 import Review from "../models/Review.js";
 
-/**
- * 🔹 GET /api/admin/analytics/summary
- * Returns analytics data for dashboard + overview
- */
+/* GET /api/admin/analytics/summary - Returns analytics data for dashboard + overview */
 export const getAdminAnalytics = async (req, res) => {
   try {
     // Count totals
     const totalProfessors = await Professor.countDocuments();
-    const approvedProfessors = await Professor.countDocuments({ isApproved: true });
-    const pendingProfessors = await Professor.countDocuments({ isApproved: false });
+    const approvedProfessors = await Professor.countDocuments({
+      isApproved: true,
+    });
+    const pendingProfessors = await Professor.countDocuments({
+      isApproved: false,
+    });
     const totalStudents = await User.countDocuments({ role: "student" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
 

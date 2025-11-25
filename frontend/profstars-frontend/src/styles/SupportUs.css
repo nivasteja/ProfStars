@@ -1,0 +1,473 @@
+/* SupportUs.css - Updated for Responsiveness and Aesthetics */
+
+.support-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeInModal 0.3s ease;
+  padding: 15px;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.support-modal-content {
+  background: #ffffff;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 35px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: slideInModal 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes slideInModal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.support-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.support-modal-close:hover {
+  color: #333;
+  transform: rotate(90deg);
+}
+
+.support-modal-title {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #222;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.support-modal-desc {
+  text-align: center;
+  font-size: 1.05rem;
+  color: #555;
+  margin-bottom: 35px;
+  line-height: 1.6;
+}
+
+.donation-amounts {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.amount-btn {
+  flex: 1;
+  min-width: 80px;
+  background: #f8f8f8;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.amount-btn:hover:not(:disabled) {
+  background: #eef;
+  border-color: #c3a3f9;
+  color: #6a0dad;
+}
+
+.amount-btn.selected {
+  background: #e8d6ff;
+  border-color: #6a0dad;
+  color: #6a0dad;
+  box-shadow: 0 2px 8px rgba(106, 13, 173, 0.1);
+}
+
+.amount-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.custom-amount-wrapper {
+  display: flex;
+  align-items: center;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-amount-wrapper:focus-within {
+  border-color: #6a0dad;
+  box-shadow: 0 0 0 4px rgba(106, 13, 173, 0.15);
+}
+
+.currency-symbol {
+  padding: 12px 16px;
+  background: #f0f0f0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #555;
+  border-right: 1px solid #e0e0e0;
+}
+
+.custom-amount-input {
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  font-size: 1.05rem;
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+  color: #333;
+}
+
+.custom-amount-input::placeholder {
+  color: #999;
+}
+
+.custom-amount-input:disabled {
+  background: #f9f9f9;
+  cursor: not-allowed;
+}
+
+.paypal-button-container {
+  margin-top: 35px;
+  min-height: 50px;
+}
+
+.amount-error {
+  text-align: center;
+  color: #e74c3c;
+  font-size: 0.95rem;
+  margin-top: 15px;
+  font-weight: 500;
+}
+
+.processing-message {
+  text-align: center;
+  color: #6a0dad;
+  font-size: 1rem;
+  margin-top: 15px;
+  font-weight: 600;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.sandbox-notice {
+  text-align: center;
+  color: #ff9800;
+  font-size: 0.85rem;
+  margin-top: 20px;
+  padding: 10px;
+  background: #fff8e1;
+  border-radius: 8px;
+  border: 1px solid #ffe082;
+}
+
+/* --- Media Queries for Responsiveness --- */
+
+@media (max-width: 600px) {
+  .support-modal-content {
+    padding: 25px 20px;
+    border-radius: 8px;
+  }
+
+  .support-modal-title {
+    font-size: 1.5rem;
+  }
+
+  .support-modal-desc {
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+  }
+
+  .donation-amounts {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .amount-btn {
+    width: 100%;
+    min-width: unset;
+    padding: 12px 10px;
+    font-size: 1rem;
+  }
+
+  .custom-amount-wrapper {
+    margin-top: 15px;
+  }
+
+  .currency-symbol,
+  .custom-amount-input {
+    padding: 10px 12px;
+    font-size: 1rem;
+  }
+
+  .paypal-button-container {
+    margin-top: 25px;
+  }
+}
+
+@media (max-width: 400px) {
+  .support-modal-content {
+    max-width: 95%;
+  }
+}
+
+/* --- Success Screen Styles --- */
+
+.success-screen {
+  text-align: center;
+  padding: 20px 0;
+  animation: fadeInSuccess 0.5s ease-in-out;
+}
+
+@keyframes fadeInSuccess {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-checkmark {
+  margin: 0 auto 30px;
+  width: 100px;
+  height: 100px;
+}
+
+.checkmark {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #4bb71b;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px #4bb71b;
+  animation: fill 0.4s ease-in-out 0.4s forwards,
+    scale 0.3s ease-in-out 0.9s both;
+  position: relative;
+  margin: 0 auto;
+}
+
+.checkmark-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: #4bb71b;
+  fill: #fff;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  stroke: #4bb71b;
+  stroke-width: 3;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes scale {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+
+@keyframes fill {
+  100% {
+    box-shadow: inset 0px 0px 0px 60px #4bb71b;
+  }
+}
+
+.success-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 15px 0;
+  animation: slideUpFade 0.5s ease-out 0.3s both;
+}
+
+.success-message {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0 0 30px 0;
+  animation: slideUpFade 0.5s ease-out 0.4s both;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.transaction-summary {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 0 0 25px 0;
+  text-align: left;
+  animation: slideUpFade 0.5s ease-out 0.5s both;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #222;
+  font-size: 1rem;
+}
+
+.transaction-id {
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  color: #6a0dad;
+  background: #f0e6ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.success-note {
+  font-size: 0.9rem;
+  color: #888;
+  margin: 0 0 30px 0;
+  font-style: italic;
+  animation: slideUpFade 0.5s ease-out 0.6s both;
+}
+
+.success-close-btn {
+  background: linear-gradient(135deg, #6a0dad 0%, #8b3db8 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 40px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(106, 13, 173, 0.3);
+  animation: slideUpFade 0.5s ease-out 0.7s both;
+}
+
+.success-close-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(106, 13, 173, 0.4);
+}
+
+.success-close-btn:active {
+  transform: translateY(0);
+}
+
+/* Success screen responsive */
+@media (max-width: 600px) {
+  .success-checkmark {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+  }
+
+  .checkmark {
+    width: 80px;
+    height: 80px;
+  }
+
+  .success-title {
+    font-size: 1.5rem;
+  }
+
+  .success-message {
+    font-size: 1rem;
+  }
+
+  .transaction-summary {
+    padding: 15px;
+  }
+
+  .transaction-id {
+    max-width: 150px;
+    font-size: 0.75rem;
+  }
+}

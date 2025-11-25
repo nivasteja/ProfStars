@@ -17,12 +17,12 @@ const userSchema = new mongoose.Schema(
     isApproved: {
       type: Boolean,
       default: function () {
-        return this.role !== "professor"; // professors need admin approval
+        return this.role !== "professor";
       },
     },
     // Add to userSchema
     bio: { type: String, trim: true, maxlength: 500 },
-    profilePhoto: { type: String }, // URL to photo
+    profilePhoto: { type: String },
     socialLinks: {
       linkedin: { type: String },
       researchGate: { type: String },

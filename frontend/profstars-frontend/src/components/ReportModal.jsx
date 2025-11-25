@@ -1,59 +1,84 @@
 // src/components/ReportModal.jsx
 import React, { useState } from "react";
-import "../styles/Explore.css";
+import "../styles/ReportModal.css";
 import API from "../api";
+
+const REASONS = [
+  "Incorrect Information",
+  "Broken Website Link",
+  "University Does Not Exist",
+  "Duplicate Entry",
+  "Other",
+];
 
 const ReportModal = ({ item, onClose }) => {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const submitReport = async () => {
+    if (!reason.trim()) {
+      alert("Please select a reason.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      await API.post("/report", {
-        university: item.name,
+      await API.post("/reports/add", {
+        targetName: item.name,
+        targetType: "university",
         reason,
-        details
+        details,
       });
-      setSubmitted(true);
-      setTimeout(onClose, 1500);
-    } catch {
+
+      alert("Report submitted successfully. Admin will review it soon.");
+      onClose();
+    } catch (err) {
+      console.error(err);
       alert("Failed to submit report.");
     }
+    setLoading(false);
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="report-modal">
-        {!submitted ? (
-          <>
-            <h2>Report Issue</h2>
-            <p className="modal-uniname">{item.name}</p>
+    <div className="report-overlay" onClick={onClose}>
+      <div className="report-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="report-close" onClick={onClose}>
+          ✕
+        </button>
 
-            <label>Reason</label>
-            <select value={reason} onChange={(e) => setReason(e.target.value)}>
-              <option value="">Select reason...</option>
-              <option value="Incorrect Information">Incorrect Information</option>
-              <option value="Wrong Website">Wrong Website</option>
-              <option value="Duplicate Entry">Duplicate Entry</option>
-              <option value="Other">Other</option>
-            </select>
+        <h2 className="report-title">Report Issue</h2>
+        <p className="report-sub">{item.name}</p>
 
-            <label>Details (optional)</label>
-            <textarea
-              rows="3"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-            />
+        <label className="report-label">Reason</label>
+        <select
+          className="report-select"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        >
+          <option value="">Select reason...</option>
+          {REASONS.map((r, i) => (
+            <option key={i} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
 
-            <button className="submit-report-btn" onClick={submitReport}>
-              Submit Report
-            </button>
-            <button className="modal-close" onClick={onClose}>Close</button>
-          </>
-        ) : (
-          <h3 className="success-msg">Report submitted ✔</h3>
-        )}
+        <label className="report-label">Details (optional)</label>
+        <textarea
+          className="report-textarea"
+          placeholder="Describe the issue..."
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
+
+        <button
+          className="report-submit"
+          disabled={loading}
+          onClick={submitReport}
+        >
+          {loading ? "Submitting..." : "Submit Report"}
+        </button>
       </div>
     </div>
   );

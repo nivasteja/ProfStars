@@ -6,76 +6,69 @@ import "../styles/AdminDashboard.css";
 
 const AdminDashboard = () => {
   const [tab, setTab] = useState("pending");
-  const [pendingProfs, setPendingProfs] = useState([]);
-  const [approvedProfs, setApprovedProfs] = useState([]);
-  const [studentProfs, setStudentProfs] = useState([]);
+  const [professors, setProfessors] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const token = localStorage.getItem("token");
 
-  // Fetching Professors from MongoDB
-  const fetchProfessors = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        "http://localhost:5000/api/admin/pending-professors",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  // ✅ Load professors by tab
+  const fetchProfessors = useCallback(
+    async (status = tab) => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `http://localhost:5000/api/admin/professors?status=${status}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setProfessors(res.data);
+      } catch (error) {
+        console.error("❌ Failed to fetch professors:", error);
+        toast.error("Unable to load data.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, tab]
+  );
 
-      const all = res.data;
-      setPendingProfs(
-        all.filter(
-          (p) =>
-            p.isApproved === false &&
-            !p.email.includes("@pending.profstars.com")
-        )
-      );
-      setApprovedProfs(all.filter((p) => p.isApproved === true));
-      setStudentProfs(
-        all.filter((p) => p.email.includes("@pending.profstars.com"))
-      );
-    } catch (error) {
-      console.error("❌ Failed to fetch professors:", error);
-      toast.error("Unable to load data from database.");
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-
-  // Initial load and auto refresh every 30s
   useEffect(() => {
-    fetchProfessors();
-    const interval = setInterval(fetchProfessors, 30000);
-    return () => clearInterval(interval);
-  }, [fetchProfessors]);
+    fetchProfessors(tab);
+  }, [tab, fetchProfessors]);
 
-  // Approve / Reject actions
+  // ✅ Approve or Reject professor
   const handleAction = async (id, action) => {
     try {
       const url =
         action === "approve"
-          ? `http://localhost:5000/api/admin/approve/${id}`
-          : `http://localhost:5000/api/admin/reject/${id}`;
-      const method = action === "approve" ? axios.patch : axios.delete;
+          ? `http://localhost:5000/api/admin/professor/approve/${id}`
+          : `http://localhost:5000/api/admin/professor/reject/${id}`;
 
-      const res = await method(
+      const res = await axios.put(
         url,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(res.data.message || "Action successful");
-      fetchProfessors();
+      toast.success(res.data.message);
+
+      // --------------------------------------------------
+      // REMOVE instantly from current tab (critical fix)
+      // --------------------------------------------------
+      setProfessors((prev) => prev.filter((p) => p._id !== id));
+
+      // If admin is currently viewing APPROVED tab → reload it
+      if (action === "approve" && tab === "approved") {
+        fetchProfessors("approved");
+      }
     } catch (error) {
       console.error("❌ Action failed:", error);
       toast.error("Operation failed.");
     }
   };
 
-  // Table rendering
-  const renderTable = (list, showActions = false) => (
+  // --------------------------------------------------
+  // Dynamic Table Rendering
+  // --------------------------------------------------
+  const renderTable = (list, showActions) => (
     <table className="prof-table">
       <thead>
         <tr>
@@ -102,6 +95,7 @@ const AdminDashboard = () => {
               <td>{prof.university || "-"}</td>
               <td>{prof.department || "-"}</td>
               <td>{prof.country || "-"}</td>
+
               {showActions && (
                 <td className="actions">
                   <button
@@ -128,6 +122,7 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <ToastContainer position="bottom-right" />
+
       <h1 className="page-title">Professor Approvals</h1>
 
       {/* Tabs */}
@@ -138,27 +133,30 @@ const AdminDashboard = () => {
         >
           Pending
         </button>
+
         <button
           className={tab === "approved" ? "active" : ""}
           onClick={() => setTab("approved")}
         >
           Approved
         </button>
+
         <button
-          className={tab === "student" ? "active" : ""}
-          onClick={() => setTab("student")}
+          className={tab === "student-submitted" ? "active" : ""}
+          onClick={() => setTab("student-submitted")}
         >
           Student Submitted
         </button>
       </div>
 
+      {/* Content Loader */}
       {loading ? (
         <p className="loading">Loading professors...</p>
       ) : (
         <div className="tab-content">
-          {tab === "pending" && renderTable(pendingProfs, true)}
-          {tab === "approved" && renderTable(approvedProfs)}
-          {tab === "student" && renderTable(studentProfs, true)}
+          {tab === "pending" && renderTable(professors, true)}
+          {tab === "approved" && renderTable(professors, false)}
+          {tab === "student-submitted" && renderTable(professors, true)}
         </div>
       )}
     </div>

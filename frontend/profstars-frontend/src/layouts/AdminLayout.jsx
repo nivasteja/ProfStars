@@ -1,16 +1,41 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { FiMenu, FiLogOut, FiX, FiBarChart2, FiCheckCircle, FiPieChart } from "react-icons/fi";
+import {
+  FiMenu,
+  FiLogOut,
+  FiX,
+  FiBarChart2,
+  FiCheckCircle,
+  FiPieChart,
+} from "react-icons/fi";
 import "../styles/AdminLayout.css";
 
 const AdminLayout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  // // ✅ Logout function
+  // const handleLogout = () => {
+  //   // Clear only relevant data
+  //   localStorage.removeItem("token");
+  //   localStorage.removeItem("role");
+
+  //   // Optional small delay (for better UX)
+  //   setTimeout(() => {
+  //     navigate("/admin-login", { replace: true }); // redirect to admin login page
+  //   }, 300);
+  // };
   // ✅ Logout function
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/admin-login");
+    // Clear local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
+    // Force a re-render of App's auth state
+    window.dispatchEvent(new Event("storage"));
+
+    // Navigate to login page
+    navigate("/admin-login", { replace: true });
   };
 
   return (

@@ -1,80 +1,89 @@
 import express from "express";
-import Professor from "../models/Professor.js";
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Review from "../models/Review.js";
 
 const router = express.Router();
 
-// ✅ Verify Admin Middleware
+/* =======================================================
+   ✅ Verify Admin Middleware (Debug Version)
+   ======================================================= */
 const verifyAdmin = (req, res, next) => {
+  // Log the raw Authorization header
+  console.log("\n=============================");
+  console.log("🔍 Incoming Admin API Request");
+  console.log("🔹 URL:", req.originalUrl);
+  console.log("🔹 Method:", req.method);
+  console.log("🔹 Authorization Header:", req.headers.authorization);
+  console.log("=============================\n");
+
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token provided" });
+
+  if (!token) {
+    console.log("❌ No token provided by frontend!");
+    return res.status(401).json({ message: "No token provided" });
+  }
 
   try {
-    const decoded = JSON.parse(
-      Buffer.from(token.split(".")[1], "base64").toString()
-    );
-    if (decoded.role !== "admin")
-      return res.status(403).json({ message: "Access denied" });
+    // Verify token using your secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Token successfully verified!");
+    console.log("Decoded Token:", decoded);
+
+    if (decoded.role !== "admin") {
+      console.log("⚠️ Access denied - Role is not admin:", decoded.role);
+      return res.status(403).json({ message: "Access denied: Not admin" });
+    }
+
+    // Save user info in request
+    req.user = decoded;
+    console.log("✅ Admin access granted to:", decoded.email);
+    console.log("=============================\n");
     next();
-  } catch {
-    res.status(403).json({ message: "Invalid token" });
+  } catch (err) {
+    console.error("❌ JWT verification failed!");
+    console.error("Error Message:", err.message);
+    console.log("=============================\n");
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
-// ✅ Analytics Summary Route
+/* =======================================================
+   📊 Analytics Summary Route (Uses verifyAdmin)
+   ======================================================= */
 router.get("/summary", verifyAdmin, async (req, res) => {
   try {
-    // === Professor Counts ===
-    const totalProfessors = await Professor.countDocuments();
-    const approvedProfessors = await Professor.countDocuments({ isApproved: true });
-    const pendingProfessors = await Professor.countDocuments({ isApproved: false });
-
-    // === Student & Admin Counts ===
+    const totalProfessors = await User.countDocuments({ role: "professor" });
+    const approvedProfessors = await User.countDocuments({
+      role: "professor",
+      isApproved: true,
+    });
+    const pendingProfessors = await User.countDocuments({
+      role: "professor",
+      isApproved: false,
+    });
     const totalStudents = await User.countDocuments({ role: "student" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
-
-    // === Average Rating ===
     const reviews = await Review.find();
     const avgRating =
       reviews.length > 0
         ? (
-            reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+            reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+            reviews.length
           ).toFixed(2)
         : 0;
 
-    // === Top Universities by Approved Professors ===
-    const topUniversities = await Professor.aggregate([
-      { $match: { isApproved: true, university: { $ne: null } } },
-      { $group: { _id: "$university", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 5 },
-    ]);
-
-    // === Rating Trends (average per date) ===
-    const ratingTrends = await Review.aggregate([
-      {
-        $group: {
-          _id: { $substr: ["$createdAt", 0, 10] },
-          avgRating: { $avg: "$rating" },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
-
-    res.status(200).json({
+    res.json({
       totalProfessors,
       approvedProfessors,
       pendingProfessors,
       totalStudents,
       totalAdmins,
       avgRating,
-      topUniversities,
-      ratingTrends,
     });
   } catch (err) {
-    console.error("❌ Analytics fetch error:", err.message);
-    res.status(500).json({ message: "Failed to fetch analytics" });
+    console.error("❌ Error fetching analytics:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
