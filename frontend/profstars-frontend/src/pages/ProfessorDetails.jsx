@@ -110,6 +110,15 @@ const ProfessorDetails = () => {
     navigate("/");
   };
 
+   const studentBtnStyle = {
+    background: "linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "none",
+  };
+
+
   // Get unique semesters from subjects
   const uniqueSemesters = [
     ...new Set(subjects.map((s) => s.semester).filter(Boolean)),
@@ -139,28 +148,34 @@ const ProfessorDetails = () => {
 
           {/* Links */}
           <div className={`navbar-links ${menuOpen ? "open" : ""}`}>
-            <button className="nav-link" onClick={() => navigate("/dashboard")}>
-              Dashboard
-            </button>
-            <button
-              className="nav-link"
-              onClick={() => {
-                navigate("/dashboard");
-                // This will be handled by StudentDashboard to switch to add-professor tab
-                setTimeout(() => {
-                  const event = new CustomEvent("switchTab", {
-                    detail: "add-professor",
-                  });
-                  window.dispatchEvent(event);
-                }, 100);
-              }}
-            >
-              Add Professor
-            </button>
-            <button className="nav-link btn-cta" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
+  <button
+    className="nav-link"
+    style={studentBtnStyle}
+    onClick={() => navigate("/dashboard")}
+  >
+    Dashboard
+  </button>
+
+  <button
+    className="nav-link"
+    style={studentBtnStyle}
+    onClick={() => {
+      navigate("/dashboard");
+      setTimeout(() => {
+        const event = new CustomEvent("switchTab", {
+          detail: "add-professor",
+        });
+        window.dispatchEvent(event);
+      }, 100);
+    }}
+  >
+    Add Professor
+  </button>
+
+  <button className="nav-link btn-cta" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
 
           {/* Hamburger Menu for Mobile */}
           <div
@@ -528,6 +543,7 @@ const ProfessorDetails = () => {
                 <label>Your Review *</label>
                 <textarea
                   placeholder="Share your experience with this professor..."
+                  aria-label="Share your experience with this professor..."
                   value={newReview.comment}
                   onChange={(e) =>
                     setNewReview({ ...newReview, comment: e.target.value })

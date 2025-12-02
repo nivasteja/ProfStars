@@ -139,8 +139,8 @@ select:disabled {
 /* --- Buttons --- */
 button {
   padding: 14px;
-  background-color: #6a0dad;
-  color: white;
+  background-color: #6d28d9; /* Accessible deep purple */
+  color: #ffffff;            /* White text */
   border: none;
   border-radius: 10px;
   font-size: 1.05rem;
@@ -151,10 +151,17 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: #5800b5;
+  background-color: #5b21b6; /* Darker hover for better contrast */
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(106, 13, 173, 0.3);
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
 }
+
+button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
 
 button:disabled {
   background-color: #cbd5e0;
@@ -253,4 +260,14 @@ button:disabled {
 
 .Toastify__close-button:hover {
   opacity: 1;
+}
+
+
+button[type="submit"] {
+  background-color: #6d28d9 !important; /* Accessible purple */
+  color: #ffffff !important;
+}
+
+button[type="submit"]:hover {
+  background-color: #5b21b6 !important;
 }

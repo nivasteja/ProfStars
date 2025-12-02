@@ -8,6 +8,14 @@ const StudentNavbar = ({ activeTab, setActiveTab }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const studentBtnStyle = {
+    background: "linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%)",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "none",
+  };
+
   // Close mobile menu when navigating
   useEffect(() => {
     setMenuOpen(false);
@@ -33,18 +41,20 @@ const StudentNavbar = ({ activeTab, setActiveTab }) => {
         <div className={`navbar-links ${menuOpen ? "open" : ""}`}>
           <button
             className={`nav-link ${activeTab === "dashboard" ? "active" : ""}`}
+            style={studentBtnStyle}
             onClick={() => setActiveTab("dashboard")}
           >
             Dashboard
           </button>
+
           <button
-            className={`nav-link ${
-              activeTab === "add-professor" ? "active" : ""
-            }`}
+            className={`nav-link ${activeTab === "add-professor" ? "active" : ""}`}
+            style={studentBtnStyle}
             onClick={() => setActiveTab("add-professor")}
           >
             Add Professor
           </button>
+
           <button className="nav-link btn-cta" onClick={handleLogout}>
             Logout
           </button>

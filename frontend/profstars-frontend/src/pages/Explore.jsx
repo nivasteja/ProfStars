@@ -152,7 +152,7 @@ const Explore = () => {
         item.web_pages?.[0]?.includes(".edu") ||
         item.web_pages?.[0]?.includes(".ac")
       )
-        badges.push({ label: "Verified", color: "#22c55e" });
+        badges.push({ label: "Verified", color: "#000000ff" });
     }
 
     return badges;
@@ -207,6 +207,7 @@ const Explore = () => {
         <input
           type="text"
           placeholder={`Search ${view}...`}
+          aria-label="search universities"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

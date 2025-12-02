@@ -25,7 +25,7 @@ const ProfessorNavbar = ({ activeTab, setActiveTab }) => {
     <nav className="navbar">
       <div className="navbar-container">
         {/* Logo and Brand */}
-        <Link to="/" className="navbar-logo">
+        <Link to="/professor" className="navbar-logo">
           <img src={logo} alt="ProfStars Logo" className="logo-img" />
           <span className="logo-text">ProfStars</span>
         </Link>

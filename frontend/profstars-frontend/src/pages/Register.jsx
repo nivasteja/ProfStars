@@ -232,6 +232,7 @@ const Register = () => {
               type="text"
               name="name"
               placeholder="Full Name"
+              aria-label="Full name"
               value={formData.name}
               onChange={handleChange}
               className={errors.name ? "error" : ""}
@@ -244,6 +245,7 @@ const Register = () => {
               type="email"
               name="email"
               placeholder="Email Address"
+              aria-label="Email Address"
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? "error" : ""}
@@ -256,6 +258,7 @@ const Register = () => {
               type="password"
               name="password"
               placeholder="Password (min 6 chars, uppercase, lowercase, number)"
+              aria-label="Password (min 6 chars, uppercase, lowercase, number)"
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? "error" : ""}
@@ -270,6 +273,7 @@ const Register = () => {
               type="password"
               name="confirmPassword"
               placeholder="Confirm Password"
+              aria-label="COnfirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
               className={errors.confirmPassword ? "error" : ""}
@@ -336,6 +340,7 @@ const Register = () => {
                   <input
                     type="text"
                     placeholder="Enter Your University Name *"
+                    aria-label="Enter Your University Name *"
                     value={customUniversity}
                     onChange={handleCustomUniversityChange}
                     className={errors.university ? "error" : ""}
@@ -358,6 +363,7 @@ const Register = () => {
                     ? "Loading Universities..."
                     : "Enter University Name *"
                 }
+                aria-label="Select a country first"
                 value={formData.university}
                 onChange={handleChange}
                 disabled={!formData.country || loadingUniversities}
@@ -376,6 +382,7 @@ const Register = () => {
                   type="text"
                   name="department"
                   placeholder="Department *"
+                  aria-label="Department *"
                   value={formData.department}
                   onChange={handleChange}
                   className={errors.department ? "error" : ""}
@@ -389,6 +396,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="academicTitle"
+                  aria-label="academicTitle"
                   placeholder="Academic Title (e.g., Lecturer, Professor)"
                   value={formData.academicTitle}
                   onChange={handleChange}
@@ -400,6 +408,7 @@ const Register = () => {
                   type="number"
                   name="experienceYears"
                   placeholder="Years of Experience"
+                  aria-label="years of experience"
                   value={formData.experienceYears}
                   onChange={handleChange}
                   min="0"
@@ -418,6 +427,7 @@ const Register = () => {
                 type="text"
                 name="major"
                 placeholder="Major / Field of Study *"
+                aria-label="MAjor / FIeld of study *"
                 value={formData.major}
                 onChange={handleChange}
                 className={errors.major ? "error" : ""}

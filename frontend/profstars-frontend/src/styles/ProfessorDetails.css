@@ -293,7 +293,7 @@
 }
 
 .empty-message {
-  color: #9ca3af;
+  color: #000000;
   font-size: 14px;
   text-align: center;
   padding: 40px;
@@ -354,23 +354,23 @@
 }
 
 .badge.badge-gray {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #e5e7eb; /* slightly darker gray */
+  color: #1f2937; /* much darker text */
 }
 
 .subject-description {
   font-size: 14px;
-  color: #6b7280;
+  color: #000000;
   line-height: 1.6;
   margin: 12px 0 0 0;
 }
 
 .subject-semester {
   font-size: 13px;
-  color: #9ca3af;
-  margin: 12px 0 0 0;
+  color: #374151; /* darker gray */
   font-weight: 600;
 }
+
 
 /* ===============================================
    Action Section
@@ -513,13 +513,14 @@
 
 .review-stars {
   font-size: 14px;
-  color: #fbbf24;
+  color: #b45309; /* darker golden brown */
   letter-spacing: 1px;
 }
 
+
 .review-date {
   font-size: 12px;
-  color: #9ca3af;
+  color: #374151; /* darker gray */
   font-weight: 600;
 }
 
@@ -611,7 +612,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  color: #6b7280;
+  color: #000000;
   font-family: inherit;
 }
 
@@ -659,7 +660,7 @@
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   font-size: 15px;
-  color: #111827;
+  color: #000103;
   background: white;
   transition: all 0.2s ease;
   font-family: inherit;
@@ -680,7 +681,7 @@
 
 .char-count {
   font-size: 12px;
-  color: #9ca3af;
+  color: #000000;
   text-align: right;
   font-weight: 500;
 }

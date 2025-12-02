@@ -13,6 +13,7 @@ const StudentDashboard = () => {
   const [countries, setCountries] = useState([]);
   const [universities, setUniversities] = useState([]);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [loadingProfessors, setLoadingProfessors] = useState(false);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -23,7 +24,7 @@ const StudentDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const professorsPerPage = 12;
 
-  // Add Professor Form - REMOVED BIO
+  // Add Professor Form
   const [newProfessor, setNewProfessor] = useState({
     name: "",
     department: "",
@@ -85,6 +86,7 @@ const StudentDashboard = () => {
 
   // Fetch professors
   const fetchProfessors = useCallback(async () => {
+    setLoadingProfessors(true);
     try {
       const res = await axios.get(
         `http://localhost:5000/api/review/professors?q=${encodeURIComponent(
@@ -95,6 +97,9 @@ const StudentDashboard = () => {
       setProfessors(res.data);
     } catch (error) {
       console.error("Error fetching professors:", error);
+      toast.error("Failed to load professors");
+    } finally {
+      setLoadingProfessors(false);
     }
   }, [token, search]);
 
@@ -128,7 +133,7 @@ const StudentDashboard = () => {
     setCurrentPage(1);
   }, [search, filterCountry, filterUniversity]);
 
-  // Handle Add Professor - REMOVED BIO
+  // Handle Add Professor
   const handleAddProfessor = async (e) => {
     e.preventDefault();
 
@@ -182,17 +187,22 @@ const StudentDashboard = () => {
           <div className="section">
             <div className="section-header">
               <h1>Explore Professors</h1>
+              <p className="section-subtitle">
+                Search and filter through our comprehensive professor directory
+              </p>
             </div>
 
             {/* Filters */}
             <div className="filters-section">
               <input
                 type="text"
+                className="search-input"
                 placeholder="Search by professor name..."
+                aria-label="Search by professor name"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="search-input"
               />
+
               <select
                 value={filterCountry}
                 onChange={(e) => {
@@ -235,123 +245,159 @@ const StudentDashboard = () => {
             </div>
 
             {/* Results Info */}
-            <div className="results-info">
-              Showing {paginatedProfessors.length} of{" "}
-              {filteredProfessors.length} professors
-            </div>
+            {!loadingProfessors && (
+              <div className="results-info">
+                Showing {paginatedProfessors.length} of{" "}
+                {filteredProfessors.length} professors
+              </div>
+            )}
+
+            {/* Loading State */}
+            {loadingProfessors && (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading professors...</p>
+              </div>
+            )}
 
             {/* Professors Grid */}
-            {paginatedProfessors.length === 0 ? (
+            {!loadingProfessors && paginatedProfessors.length === 0 ? (
               <div className="empty">
-                <p>No professors found matching your criteria.</p>
-                {(search || filterCountry || filterUniversity) && (
-                  <button className="btn-secondary" onClick={clearFilters}>
-                    Clear Filters
+                <div className="empty-icon">🔍</div>
+                <h2>No Professors Found</h2>
+                <p>
+                  {search || filterCountry || filterUniversity
+                    ? "We couldn't find any professors matching your criteria. Try adjusting your filters or search terms."
+                    : "No professors available yet. Be the first to add one!"}
+                </p>
+                <div className="empty-actions">
+                  {(search || filterCountry || filterUniversity) && (
+                    <button className="btn-secondary" onClick={clearFilters}>
+                      Clear Filters
+                    </button>
+                  )}
+                  <button
+                    className="btn-primary"
+                    onClick={() => setActiveTab("add-professor")}
+                  >
+                    Add Professor
                   </button>
-                )}
+                </div>
               </div>
             ) : (
-              <>
-                <div className="professors-grid">
-                  {paginatedProfessors.map((prof) => (
-                    <div key={prof._id} className="professor-card">
-                      <div className="card-header">
-                        <h3>{prof.name}</h3>
-                        <div className="rating">
-                          ⭐{" "}
-                          {prof.averageRating
-                            ? prof.averageRating.toFixed(1)
-                            : "N/A"}
-                        </div>
-                      </div>
-
-                      <div className="card-body">
-                        <div className="info-row">
-                          <span className="label">University:</span>
-                          <span className="value">
-                            {prof.university || "N/A"}
-                          </span>
-                        </div>
-                        <div className="info-row">
-                          <span className="label">Department:</span>
-                          <span className="value">
-                            {prof.department || "N/A"}
-                          </span>
-                        </div>
-                        <div className="info-row">
-                          <span className="label">Country:</span>
-                          <span className="value">{prof.country || "N/A"}</span>
-                        </div>
-                        {prof.academicTitle && (
-                          <div className="info-row">
-                            <span className="label">Title:</span>
-                            <span className="value">{prof.academicTitle}</span>
+              !loadingProfessors && (
+                <>
+                  <div className="professors-grid">
+                    {paginatedProfessors.map((prof) => (
+                      <div key={prof._id} className="professor-card">
+                        <div className="card-header">
+                          <h3>{prof.name}</h3>
+                          <div className="rating">
+                            ⭐{" "}
+                            {prof.averageRating
+                              ? prof.averageRating.toFixed(1)
+                              : "N/A"}
                           </div>
-                        )}
+                        </div>
+
+                        <div className="card-body">
+                          <div className="info-row">
+                            <span className="label">University:</span>
+                            <span className="value">
+                              {prof.university || "N/A"}
+                            </span>
+                          </div>
+                          <div className="info-row">
+                            <span className="label">Department:</span>
+                            <span className="value">
+                              {prof.department || "N/A"}
+                            </span>
+                          </div>
+                          <div className="info-row">
+                            <span className="label">Country:</span>
+                            <span className="value">
+                              {prof.country || "N/A"}
+                            </span>
+                          </div>
+                          {prof.academicTitle && (
+                            <div className="info-row">
+                              <span className="label">Title:</span>
+                              <span className="value">
+                                {prof.academicTitle}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="card-actions">
+                          <button
+                            className="btn-view"
+                            onClick={() => navigate(`/professor/${prof._id}`)}
+                          >
+                            View Details
+                          </button>
+                        </div>
                       </div>
-
-                      <div className="card-actions">
-                        <button
-                          className="btn-view"
-                          onClick={() => navigate(`/professor/${prof._id}`)}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="pagination-btn"
-                    >
-                      Previous
-                    </button>
-
-                    <span className="pagination-info">
-                      Page {currentPage} of {totalPages}
-                    </span>
-
-                    <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="pagination-btn"
-                    >
-                      Next
-                    </button>
+                    ))}
                   </div>
-                )}
-              </>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="pagination">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="pagination-btn"
+                      >
+                        Previous
+                      </button>
+
+                      <span className="pagination-info">
+                        Page {currentPage} of {totalPages}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="pagination-btn"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              )
             )}
           </div>
         )}
 
-        {/* ADD PROFESSOR TAB - REMOVED BIO */}
+        {/* ADD PROFESSOR TAB */}
         {activeTab === "add-professor" && (
           <div className="section">
             <div className="section-header">
               <h1>Add New Professor</h1>
+              <p className="section-subtitle">
+                Help grow our community by adding a professor
+              </p>
             </div>
 
             <div className="add-professor-info">
               <p>
                 Submit a professor for admin approval. Once approved, they will
-                appear in the directory.
+                appear in the directory and be available for reviews.
               </p>
             </div>
 
             <form onSubmit={handleAddProfessor} className="add-professor-form">
               <div className="form-grid">
                 <div className="form-field">
-                  <label>Professor Name *</label>
+                  <label htmlFor="profName">Professor Name *</label>
                   <input
+                    id="profName"
                     type="text"
                     placeholder="Dr. John Smith"
                     value={newProfessor.name}
@@ -363,8 +409,9 @@ const StudentDashboard = () => {
                 </div>
 
                 <div className="form-field">
-                  <label>Academic Title</label>
+                  <label htmlFor="academicTitle">Academic Title</label>
                   <input
+                    id="academicTitle"
                     type="text"
                     placeholder="Assistant Professor, PhD"
                     value={newProfessor.academicTitle}
@@ -424,8 +471,9 @@ const StudentDashboard = () => {
                 </div>
 
                 <div className="form-field">
-                  <label>Department *</label>
+                  <label htmlFor="department">Department *</label>
                   <input
+                    id="department"
                     type="text"
                     placeholder="Computer Science"
                     value={newProfessor.department}
@@ -456,8 +504,6 @@ const StudentDashboard = () => {
           </div>
         )}
       </div>
-
-    
     </div>
   );
 };

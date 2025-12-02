@@ -204,6 +204,7 @@ const Home = () => {
               <input
                 type="text"
                 placeholder="Search universities..."
+                aria-label="Search universities..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -286,6 +287,7 @@ const Home = () => {
             <input
               type="text"
               placeholder="Search professors by name..."
+              aria-label="Search professors by name..."
               value={professorSearch}
               onChange={(e) => setProfessorSearch(e.target.value)}
               className="search-input"

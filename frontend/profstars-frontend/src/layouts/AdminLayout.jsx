@@ -45,7 +45,7 @@ const AdminLayout = () => {
         <div>
           <div className="sidebar-header">
             <h2>ProfStars</h2>
-            <button className="close-btn" onClick={() => setMenuOpen(false)}>
+            <button className="close-btn" onClick={() => setMenuOpen(false)}  aria-label="Close sidebar">
               <FiX />
             </button>
           </div>
@@ -86,7 +86,7 @@ const AdminLayout = () => {
       <div className="content-area">
         <header className="admin-header">
           <h1 className="header-title">Admin Panel</h1>
-          <button className="menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="menu-btn" onClick={() => setMenuOpen(!menuOpen)}  aria-label="open menu">
             <FiMenu />
           </button>
         </header>

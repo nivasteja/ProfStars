@@ -198,7 +198,7 @@
 
 .sandbox-notice {
   text-align: center;
-  color: #ff9800;
+  color: #000000;
   font-size: 0.85rem;
   margin-top: 20px;
   padding: 10px;
@@ -410,14 +410,43 @@
   white-space: nowrap;
 }
 
-.success-note {
-  font-size: 0.9rem;
-  color: #888;
-  margin: 0 0 30px 0;
-  font-style: italic;
+/* Download Receipt Button */
+.download-receipt-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #4bb71b 0%, #5ed42a 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 30px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(75, 183, 27, 0.3);
   animation: slideUpFade 0.5s ease-out 0.6s both;
+  margin-bottom: 15px;
 }
 
+.download-receipt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(75, 183, 27, 0.4);
+  background: linear-gradient(135deg, #5ed42a 0%, #4bb71b 100%);
+}
+
+.download-receipt-btn:active {
+  transform: translateY(0);
+}
+
+/* Countdown Timer */
+.countdown-timer {
+  font-size: 0.9rem;
+  color: #888;
+  margin: 15px 0;
+  font-weight: 500;
+  animation: slideUpFade 0.5s ease-out 0.65s both;
+}
+
+/* Success Close Button */
 .success-close-btn {
   background: linear-gradient(135deg, #6a0dad 0%, #8b3db8 100%);
   color: white;
@@ -469,5 +498,15 @@
   .transaction-id {
     max-width: 150px;
     font-size: 0.75rem;
+  }
+
+  .download-receipt-btn,
+  .success-close-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+  }
+
+  .countdown-timer {
+    font-size: 0.85rem;
   }
 }

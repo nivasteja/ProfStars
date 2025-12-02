@@ -528,6 +528,7 @@ const ProfessorDashboard = () => {
                     <input
                       type="text"
                       name="name"
+                      aria-label="name"
                       value={editData.name || ""}
                       onChange={handleChange}
                       required
@@ -575,6 +576,7 @@ const ProfessorDashboard = () => {
                     <input
                       type="text"
                       name="department"
+                      aria-label="department"
                       value={editData.department || ""}
                       onChange={handleChange}
                     />
@@ -585,6 +587,7 @@ const ProfessorDashboard = () => {
                     <input
                       type="text"
                       name="academicTitle"
+                      aria-label="academic title"
                       value={editData.academicTitle || ""}
                       onChange={handleChange}
                     />
@@ -595,6 +598,7 @@ const ProfessorDashboard = () => {
                     <input
                       type="number"
                       name="experienceYears"
+                      aria-label="experienceYears"
                       value={editData.experienceYears || 0}
                       onChange={handleChange}
                     />
@@ -611,6 +615,7 @@ const ProfessorDashboard = () => {
                     maxLength={500}
                     rows={4}
                     placeholder="Tell students about yourself..."
+                    aria-label="tell students about yourself..."
                   />
                   <div className="char-count">
                     {(editData.bio || "").length}/500
@@ -627,6 +632,7 @@ const ProfessorDashboard = () => {
                       value={editData.socialLinks?.linkedin || ""}
                       onChange={handleChange}
                       placeholder="LinkedIn: https://linkedin.com/in/yourprofile"
+                      aria-label="linkedIn ID"
                     />
                     <input
                       type="url"
@@ -634,6 +640,7 @@ const ProfessorDashboard = () => {
                       value={editData.socialLinks?.researchGate || ""}
                       onChange={handleChange}
                       placeholder="ResearchGate: https://researchgate.net/profile/yourprofile"
+                      aria-label="Researchgate ID"
                     />
                     <input
                       type="url"
@@ -641,6 +648,7 @@ const ProfessorDashboard = () => {
                       value={editData.socialLinks?.googleScholar || ""}
                       onChange={handleChange}
                       placeholder="Google Scholar: https://scholar.google.com/citations?user=..."
+                      aria-label="Scholar ID"
                     />
                   </div>
                 </div>
@@ -722,6 +730,7 @@ const ProfessorDashboard = () => {
               <input
                 type="text"
                 placeholder="Search reviews..."
+                aria-label="search reviews..."
                 value={reviewSearch}
                 onChange={(e) => setReviewSearch(e.target.value)}
                 className="search-input"
@@ -840,6 +849,7 @@ const ProfessorDashboard = () => {
                   <input
                     type="text"
                     placeholder="e.g., Data Structures"
+                    aria-label="e.g., data structures"
                     value={
                       editingSubject
                         ? editingSubject.subjectName
@@ -864,6 +874,7 @@ const ProfessorDashboard = () => {
                   <input
                     type="text"
                     placeholder="Brief description..."
+                    aria-label="breif description..."
                     value={
                       editingSubject
                         ? editingSubject.description
@@ -888,6 +899,7 @@ const ProfessorDashboard = () => {
                   <input
                     type="text"
                     placeholder="CS101"
+                    aria-label="cs101"
                     value={
                       editingSubject
                         ? editingSubject.courseCode
@@ -912,6 +924,7 @@ const ProfessorDashboard = () => {
                   <input
                     type="text"
                     placeholder="Fall 2024"
+                    aria-label="Fall 2024"
                     value={
                       editingSubject
                         ? editingSubject.semester

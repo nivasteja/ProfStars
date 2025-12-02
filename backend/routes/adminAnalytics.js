@@ -6,36 +6,37 @@ import Review from "../models/Review.js";
 const router = express.Router();
 
 /* =======================================================
-   ✅ Verify Admin Middleware (Debug Version)
+   ✅ Verify Admin Middleware
    ======================================================= */
 const verifyAdmin = (req, res, next) => {
-  // Log the raw Authorization header
   console.log("\n=============================");
   console.log("🔍 Incoming Admin API Request");
   console.log("🔹 URL:", req.originalUrl);
   console.log("🔹 Method:", req.method);
-  console.log("🔹 Authorization Header:", req.headers.authorization);
-  console.log("=============================\n");
 
-  const token = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  console.log("🔹 Authorization Header:", authHeader || "NONE");
 
-  if (!token) {
-    console.log("❌ No token provided by frontend!");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    console.log("❌ No Bearer token found in Authorization header");
+    console.log("=============================\n");
     return res.status(401).json({ message: "No token provided" });
   }
 
+  const token = authHeader.split(" ")[1];
+  console.log("🔹 Extracted Token:", token);
+
   try {
-    // Verify token using your secret
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("✅ Token successfully verified!");
     console.log("Decoded Token:", decoded);
 
     if (decoded.role !== "admin") {
-      console.log("⚠️ Access denied - Role is not admin:", decoded.role);
+      console.log("⚠ Access denied - Role is not admin:", decoded.role);
+      console.log("=============================\n");
       return res.status(403).json({ message: "Access denied: Not admin" });
     }
 
-    // Save user info in request
     req.user = decoded;
     console.log("✅ Admin access granted to:", decoded.email);
     console.log("=============================\n");
@@ -49,10 +50,12 @@ const verifyAdmin = (req, res, next) => {
 };
 
 /* =======================================================
-   📊 Analytics Summary Route (Uses verifyAdmin)
+   📊 Analytics Summary Route
+   (used by /admin/analytics page)
    ======================================================= */
 router.get("/summary", verifyAdmin, async (req, res) => {
   try {
+    // ---- COUNTS ----
     const totalProfessors = await User.countDocuments({ role: "professor" });
     const approvedProfessors = await User.countDocuments({
       role: "professor",
@@ -64,15 +67,48 @@ router.get("/summary", verifyAdmin, async (req, res) => {
     });
     const totalStudents = await User.countDocuments({ role: "student" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
-    const reviews = await Review.find();
-    const avgRating =
-      reviews.length > 0
-        ? (
-            reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
-            reviews.length
-          ).toFixed(2)
-        : 0;
 
+    // ---- AVERAGE RATING (OVERALL) ----
+    const ratingAgg = await Review.aggregate([
+      { $group: { _id: null, avg: { $avg: "$rating" } } },
+    ]);
+    const avgRating =
+      ratingAgg.length > 0 ? Number(ratingAgg[0].avg.toFixed(2)) : 0;
+
+    // ---- TOP 5 UNIVERSITIES (by approved professors) ----
+    // uses User collection so it matches your current data
+    const topUniversities = await User.aggregate([
+      {
+        $match: {
+          role: "professor",
+          isApproved: true,
+          university: { $ne: null, $ne: "" },
+        },
+      },
+      {
+        $group: {
+          _id: "$university",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    // ---- RATING TREND (average rating per day) ----
+    const ratingTrends = await Review.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          avgRating: { $avg: "$rating" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // ---- RESPONSE (matches AdminAnalytics.jsx expectations) ----
     res.json({
       totalProfessors,
       approvedProfessors,
@@ -80,6 +116,8 @@ router.get("/summary", verifyAdmin, async (req, res) => {
       totalStudents,
       totalAdmins,
       avgRating,
+      topUniversities,
+      ratingTrends,
     });
   } catch (err) {
     console.error("❌ Error fetching analytics:", err);

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { toast } from "react-toastify";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "../styles/SupportUs.css";
 
 const PAYPAL_CLIENT_ID =
@@ -10,6 +12,7 @@ const CURRENCY = "CAD";
 const FIXED_AMOUNTS = [3, 5, 10];
 const MIN_AMOUNT = 1.0;
 const MAX_AMOUNT = 1000.0;
+const AUTO_CLOSE_SECONDS = 60;
 
 const IS_SANDBOX = true;
 
@@ -21,6 +24,7 @@ const SupportUs = ({ show, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState(null);
+  const [countdown, setCountdown] = useState(AUTO_CLOSE_SECONDS);
 
   useEffect(() => {
     if (show) {
@@ -31,8 +35,30 @@ const SupportUs = ({ show, onClose }) => {
       setIsProcessing(false);
       setShowSuccess(false);
       setTransactionDetails(null);
+      setCountdown(AUTO_CLOSE_SECONDS);
     }
   }, [show]);
+
+  // Countdown timer for auto-close
+  useEffect(() => {
+    let timer;
+    if (showSuccess && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            onClose();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [showSuccess, countdown, onClose]);
 
   const validateAmount = (amount) => {
     const numericAmount = parseFloat(amount);
@@ -99,6 +125,285 @@ const SupportUs = ({ show, onClose }) => {
     });
   };
 
+  const generatePDFReceipt = () => {
+    if (!transactionDetails) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Colors
+    const primaryColor = [106, 13, 173]; // #6a0dad
+    const secondaryColor = [147, 51, 234]; // Lighter purple
+    const textColor = [33, 33, 33];
+    const lightGray = [107, 114, 128];
+    const bgGray = [249, 250, 251];
+
+    // Generate unique receipt number
+    const timestamp = Date.now().toString().slice(-6);
+    const receiptNumber = `PS-${transactionDetails.transactionId
+      .slice(0, 8)
+      .toUpperCase()}-${timestamp}`;
+
+    // Load and add logo
+    const logo = new Image();
+    logo.src = "/src/assets/logo.png";
+
+    logo.onload = () => {
+      // Add logo and header
+      try {
+        doc.addImage(logo, "PNG", 20, 15, 20, 20);
+      } catch (error) {
+        console.warn("Logo could not be loaded:", error);
+      }
+
+      // Company name next to logo
+      doc.setTextColor(...primaryColor);
+      doc.setFontSize(26);
+      doc.setFont("helvetica", "bold");
+      doc.text("ProfStars", 45, 28);
+
+      // Tagline
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...lightGray);
+      doc.text("Empowering Students, Building Community", 45, 34);
+
+      // Receipt title on right
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...textColor);
+      doc.text("DONATION RECEIPT", pageWidth - 20, 25, { align: "right" });
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...lightGray);
+      doc.text(receiptNumber, pageWidth - 20, 31, { align: "right" });
+
+      // Decorative line
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(0.5);
+      doc.line(20, 45, pageWidth - 20, 45);
+
+      // Thank you section with background
+      doc.setFillColor(...bgGray);
+      doc.roundedRect(20, 55, pageWidth - 40, 35, 3, 3, "F");
+
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...primaryColor);
+      doc.text("Thank You for Your Generous Support!", pageWidth / 2, 66, {
+        align: "center",
+      });
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...textColor);
+      const impactMessage =
+        "Your contribution directly supports our mission to provide students with valuable professor ratings and academic resources. Together, we're building a stronger educational community.";
+      const splitImpact = doc.splitTextToSize(impactMessage, pageWidth - 60);
+      doc.text(splitImpact, pageWidth / 2, 75, { align: "center" });
+
+      // Transaction Summary Box
+      const summaryStartY = 100;
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(20, summaryStartY, pageWidth - 40, 78, 2, 2, "FD");
+
+      // Section header
+      doc.setFillColor(...primaryColor);
+      doc.rect(20, summaryStartY, pageWidth - 40, 10, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Transaction Details", 25, summaryStartY + 7);
+
+      // Transaction details in two columns
+      doc.setTextColor(...textColor);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+
+      const detailsY = summaryStartY + 20;
+      const lineHeight = 11;
+      const col1X = 25;
+      const col2X = pageWidth / 2 + 5;
+
+      // Left column
+      doc.setFont("helvetica", "bold");
+      doc.text("Donation Amount:", col1X, detailsY);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      doc.setTextColor(...primaryColor);
+      doc.text(
+        `${transactionDetails.currency} $${transactionDetails.amount}`,
+        col1X,
+        detailsY + 7
+      );
+
+      doc.setFontSize(10);
+      doc.setTextColor(...textColor);
+      doc.setFont("helvetica", "bold");
+      doc.text("Transaction Date:", col1X, detailsY + lineHeight * 2);
+      doc.setFont("helvetica", "normal");
+      doc.text(transactionDetails.date, col1X, detailsY + lineHeight * 2 + 7);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Payment Method:", col1X, detailsY + lineHeight * 4);
+      doc.setFont("helvetica", "normal");
+      doc.text("PayPal", col1X, detailsY + lineHeight * 4 + 7);
+
+      // Right column
+      doc.setFont("helvetica", "bold");
+      doc.text("Donor Name:", col2X, detailsY);
+      doc.setFont("helvetica", "normal");
+      doc.text(transactionDetails.payerName, col2X, detailsY + 7);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Email Address:", col2X, detailsY + lineHeight * 2);
+      doc.setFont("helvetica", "normal");
+      const emailText = doc.splitTextToSize(transactionDetails.payerEmail, 65);
+      doc.text(emailText, col2X, detailsY + lineHeight * 2 + 7);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Transaction ID:", col2X, detailsY + lineHeight * 4);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      const txnId = doc.splitTextToSize(transactionDetails.transactionId, 65);
+      doc.text(txnId, col2X, detailsY + lineHeight * 4 + 7);
+
+      // Status badge
+      doc.setFillColor(34, 197, 94); // Green
+      doc.roundedRect(pageWidth - 50, summaryStartY + 18, 25, 8, 2, 2, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("PAID", pageWidth - 37.5, summaryStartY + 23.5, {
+        align: "center",
+      });
+
+      // Organization Details Section
+      const orgStartY = summaryStartY + 93;
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...primaryColor);
+      doc.text("About ProfStars", 20, orgStartY);
+
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(0.5);
+      doc.line(20, orgStartY + 2, 60, orgStartY + 2);
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...textColor);
+      doc.text("ProfStars", 20, orgStartY + 10);
+      doc.text("299 Doon Valley Drive", 20, orgStartY + 16);
+      doc.text("Kitchener, Ontario, N2G 4M4", 20, orgStartY + 22);
+      doc.text("Canada", 20, orgStartY + 28);
+
+      // Contact & Social section
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...primaryColor);
+      doc.text("Connect With Us", pageWidth / 2 + 10, orgStartY);
+
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(0.5);
+      doc.line(
+        pageWidth / 2 + 10,
+        orgStartY + 2,
+        pageWidth / 2 + 50,
+        orgStartY + 2
+      );
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...primaryColor);
+
+      // Website
+      doc.setTextColor(...textColor);
+      doc.text("Website:", pageWidth / 2 + 10, orgStartY + 10);
+      doc.setTextColor(...primaryColor);
+      doc.textWithLink("profstars.com", pageWidth / 2 + 30, orgStartY + 10, {
+        url: "https://profstars.com",
+      });
+
+      // GitHub
+      doc.setTextColor(...textColor);
+      doc.text("GitHub:", pageWidth / 2 + 10, orgStartY + 16);
+      doc.setTextColor(...primaryColor);
+      doc.textWithLink(
+        "github.com/nivasteja/ProfStars",
+        pageWidth / 2 + 30,
+        orgStartY + 16,
+        {
+          url: "https://github.com/nivasteja/ProfStars",
+        }
+      );
+
+      // Facebook
+      doc.setTextColor(...textColor);
+      doc.text("Facebook:", pageWidth / 2 + 10, orgStartY + 22);
+      doc.setTextColor(...primaryColor);
+      doc.textWithLink(
+        "facebook.com/korra.nivas.7",
+        pageWidth / 2 + 30,
+        orgStartY + 22,
+        {
+          url: "https://www.facebook.com/korra.nivas.7",
+        }
+      );
+
+      doc.setDrawColor(...lightGray);
+      doc.setLineWidth(0.3);
+      doc.line(20, pageHeight - 32, pageWidth - 20, pageHeight - 32);
+
+      doc.setFontSize(8);
+      doc.setTextColor(...lightGray);
+      doc.setFont("helvetica", "italic");
+      const footerText =
+        "This receipt serves as confirmation of your donation. Please retain this document for your records.";
+      doc.text(footerText, pageWidth / 2, pageHeight - 25, { align: "center" });
+
+      doc.setFontSize(7);
+      doc.setTextColor(...lightGray);
+      doc.setFont("helvetica", "italic");
+      doc.text(
+        "SANDBOX MODE — This is a test transaction (no real money processed).",
+        pageWidth / 2,
+        pageHeight - 19,
+        { align: "center" }
+      );
+
+      doc.setFontSize(6);
+      doc.text(
+        "Questions? Contact us through our website or social media channels.",
+        pageWidth / 2,
+        pageHeight - 12,
+        { align: "center" }
+      );
+
+      // Save the PDF
+      const fileName = `ProfStars_Receipt_${receiptNumber}.pdf`;
+      doc.save(fileName);
+
+      toast.success("Receipt downloaded successfully!", {
+        autoClose: 3000,
+        position: "top-center",
+      });
+    };
+
+    logo.onerror = () => {
+      console.warn("Logo failed to load, generating PDF without logo");
+      // If logo fails, still generate the PDF without it
+      // (The rest of the PDF generation code would execute anyway)
+      toast.warning("Receipt generated without logo", {
+        autoClose: 3000,
+        position: "top-center",
+      });
+    };
+  };
+
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     console.log("Payment approved, capturing order...", data);
@@ -139,6 +444,7 @@ const SupportUs = ({ show, onClose }) => {
       // Show success screen
       setShowSuccess(true);
       setIsProcessing(false);
+      setCountdown(AUTO_CLOSE_SECONDS); // Reset countdown
 
       // Show toast notification
       toast.success(
@@ -148,11 +454,6 @@ const SupportUs = ({ show, onClose }) => {
           position: "top-center",
         }
       );
-
-      // Auto-close modal
-      setTimeout(() => {
-        onClose();
-      }, 5000);
 
       return details;
     } catch (error) {
@@ -325,10 +626,20 @@ const SupportUs = ({ show, onClose }) => {
                 </div>
               )}
 
-              <p className="success-note">Transaction Successful</p>
+              <button
+                className="download-receipt-btn"
+                onClick={generatePDFReceipt}
+              >
+                📥 Download Receipt
+              </button>
+
+              <p className="countdown-timer">
+                Auto-closing in {countdown} second{countdown !== 1 ? "s" : ""}
+                ...
+              </p>
 
               <button className="success-close-btn" onClick={onClose}>
-                Close
+                Close Now
               </button>
             </div>
           )}

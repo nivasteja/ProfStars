@@ -100,6 +100,7 @@ const AdminLogin = () => {
               type="email"
               name="email"
               placeholder="Admin Email Address"
+              aria-label="admin email address"
               value={formData.email}
               onChange={handleChange}
               className={errors.email ? "error" : ""}
@@ -112,6 +113,7 @@ const AdminLogin = () => {
               type="password"
               name="password"
               placeholder="Admin Password"
+              aria-label="admin password"
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? "error" : ""}

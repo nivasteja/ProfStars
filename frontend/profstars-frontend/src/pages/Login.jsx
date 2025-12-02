@@ -118,6 +118,7 @@ const Login = () => {
                 type="email"
                 name="email"
                 placeholder="Email Address"
+                aria-label="Email Address"
                 value={formData.email}
                 onChange={handleChange}
                 className={errors.email ? "error" : ""}
@@ -132,6 +133,7 @@ const Login = () => {
                 type="password"
                 name="password"
                 placeholder="Password"
+                aria-label="Password"
                 value={formData.password}
                 onChange={handleChange}
                 className={errors.password ? "error" : ""}
